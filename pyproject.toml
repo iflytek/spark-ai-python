@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "spark-ai-python"
+version = "0.1.0"
+description = "a sdk for iflytek's spark LLM."
+authors = ["whybeyoung <ybyang7@iflytek.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [
+    { include = "sparkai" }
+]
+
+[tool.poetry.dependencies]
+python = ">3.7"
+aiohttp = ">3.3"
+requests = "*"
+[tool.pytest.ini_options]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
