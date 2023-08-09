@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "spark-ai-python"
-version = "0.1.0"
+version = "0.1.4"
 description = "a sdk for iflytek's spark LLM."
 authors = ["whybeyoung <ybyang7@iflytek.com>"]
 license = "MIT"
@@ -18,3 +18,6 @@ requests = "*"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+[[tool.poetry.source]]
+name = "my-custom-repo"  # This name will be used in the configuration to retreive the proper credentials
+url = "https://repo.model.xfyun.cn/api/packages/administrator/pypi"  # URL used to download your packages from

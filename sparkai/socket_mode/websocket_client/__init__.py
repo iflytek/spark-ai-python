@@ -1,6 +1,7 @@
 """websocket-client bassd Socket Mode client
 
 """
+import copy
 import enum
 import logging
 from concurrent.futures.thread import ThreadPoolExecutor
@@ -19,8 +20,10 @@ from sparkai.socket_mode.listeners import (
     SocketModeRequestListener,
 )
 from sparkai.socket_mode.request import SocketModeRequest
-from sparkai.models.chat import ChatBody, ChatResponse
 from sparkai.memory.chat_memory import BaseChatMessageHistory
+from sparkai.schema import ChatMessage
+from sparkai.models.chat import ChatBody, ChatResponse
+
 import threading
 import json
 
@@ -34,29 +37,33 @@ class SparkMessageStatus(enum.IntEnum):
     DataOnce = 3  # 非会话单次输入输出
 
 
-class MessageGetter(threading.Thread):
-    def __init__(self, result_queue, lock):
-        super(MessageGetter, self).__init__()
-        self.lock = lock
-        self.should_return = False
-        self.result = ""
-        self.queue = result_queue
-        self.is_stopping = False
+class ResponseMessage(object):
+    def __init__(self):
+        self.init()
+        pass
 
-    def stop(self):
-        self.is_stopping = True
+    def init(self):
+        self.content = ''
+        self.role = ''
+        self.question_tokens = 0
+        self.completion_tokens = 0
+        self.total_tokens = 0
+        self.prompt_tokens = 0
+        self.status = SparkMessageStatus.DataBegin
 
-    def run(self) -> None:
-        self.get_response()
+    def set_content(self, role, content):
+        self.content: str = content
+        self.role: str = role
 
-    def get_response(self):
-        while not self.is_stopping:
-            self.lock.acquire()
-            while not self.should_return:
-                if not self.queue.empty():
-                    msg = self.queue.get(block=False)
-                    self.result += msg
-            self.lock.release()
+    def set_status(self, status: SparkMessageStatus):
+        self.status = status
+
+    def set_usage(self, question_tokens, prompt_tokens, completion_tokens,
+                  total_tokens):
+        self.question_tokens: int = question_tokens
+        self.prompt_tokens: int = prompt_tokens
+        self.completion_tokens: int = completion_tokens
+        self.total_tokens: int = total_tokens
 
 
 class InteractiveInputer(threading.Thread):
@@ -90,6 +97,9 @@ class InteractiveInputer(threading.Thread):
             pass
         finally:
             self.one_line_complete = False
+
+    def set_ws(self, ws):
+        self.ws = ws
 
     def on_press_ctrl_enter(self, key):
         if key in self.hot_key_trigger:
@@ -229,6 +239,8 @@ class SparkAISocketModeClient(BaseSocketModeClient):
         self.closed = False
         self.connect_operation_lock = Lock()
         self.chatting_lock = Lock()
+        self.chat_input_lock = threading.Lock()
+
         self.message_processor = IntervalRunner(self.process_messages, 0.001).start()
         self.message_workers = ThreadPoolExecutor(max_workers=concurrency)
 
@@ -244,13 +256,11 @@ class SparkAISocketModeClient(BaseSocketModeClient):
         self.on_message_listeners = on_message_listeners or []
         self.on_error_listeners = on_error_listeners or []
         self.on_close_listeners = on_close_listeners or []
-        self.chat_lock = threading.Lock()
 
         self.chat_inputer = None
         self.chat_outputer = None
         self.chat_response = []
-        self.response_queue = None
-
+        self.response_queue = Queue()
         # reconnect when no content in connection during 5min
         self.auto_reconnect_5m = auto_reconnect_5m
         # conversation memory
@@ -259,20 +269,26 @@ class SparkAISocketModeClient(BaseSocketModeClient):
             self.logger.warning("you can pass 'conversation_memory' param to enable memory feature. ")
         else:
             self.logger.info("conversation_memory feature enabled...")
+
     def handle_interactive_chat_response(self, message) -> (int, str):
         temp_result = json.loads(message)
         # print("响应数据:{}\n".format(temp_result))
 
         res = ChatResponse(**temp_result)
-        msg = ""
-        if res.header.status == SparkMessageStatus.DataBegin.DataBegin or res.header.status == SparkMessageStatus.DataContinue:
+        msg: ResponseMessage = ResponseMessage()
+        msg.set_status(res.header.status)
+        if res.header.status == SparkMessageStatus.DataBegin or res.header.status == SparkMessageStatus.DataContinue:
             if len(res.payload.choices.text) >= 0:
-                msg = res.payload.choices.text[0].content
-                self.chat_response.append(msg)
-        elif res.header.status == SparkMessageStatus.DataBegin.DataEnd:
+                msg.set_content(res.payload.choices.text[0].role, res.payload.choices.text[0].content)
+                self.chat_response.append(msg.content)
+        elif res.header.status == SparkMessageStatus.DataEnd:
             if len(res.payload.choices.text) >= 0:
-                msg = res.payload.choices.text[0].content
-                self.chat_response.append(msg)
+                msg.set_content(res.payload.choices.text[0].role, res.payload.choices.text[0].content)
+                msg.set_usage(question_tokens=res.payload.usage.text.question_tokens,
+                              completion_tokens=res.payload.usage.text.completion_tokens,
+                              total_tokens=res.payload.usage.text.total_tokens,
+                              prompt_tokens=res.payload.usage.text.prompt_tokens)
+                self.chat_response.append(msg.content)
             if self.chat_interactive:
                 resp_msg = "".join(self.chat_response)
                 print('Anwser: ', resp_msg)
@@ -291,10 +307,11 @@ class SparkAISocketModeClient(BaseSocketModeClient):
         return res.header.status, msg
 
     def is_connected(self) -> bool:
-        return self.current_session is not None
+        return not self.closed
+        # return self.current_session is not None
 
     def connect(self) -> None:
-        self.connect_operation_lock.acquire()
+        self.chatting_lock.acquire()
 
         def on_open(ws: WebSocketApp):
             if self.logger.level <= logging.DEBUG:
@@ -302,21 +319,25 @@ class SparkAISocketModeClient(BaseSocketModeClient):
             for listener in self.on_open_listeners:
                 listener(ws)
 
-            if self.chat_interactive:
-                self.chat_inputer = InteractiveInputer(ws=ws, lock=self.chat_lock, app_id=self.app_id,
+            if self.chat_interactive and not self.chat_inputer:
+                self.chat_inputer = InteractiveInputer(ws=ws, lock=self.chat_input_lock, app_id=self.app_id,
                                                        max_token=self.max_token, memory=self.conversation_memory)
                 self.chat_inputer.start()
-            else:
-                self.response_queue = Queue()
-                self.chat_outputer = MessageGetter(self.response_queue, self.chat_lock)
-                self.chat_outputer.start()
-            self.connect_operation_lock.release()
+            elif not self.chat_interactive and not self.chat_outputer:
+                pass
+            elif self.chat_inputer:
+                # handle reconnect ,so not double create chat_inputer
+                self.chat_inputer.ws = ws
+            elif self.chat_outputer:
+                pass
+
+            self.chatting_lock.release()
 
         def on_message(ws: WebSocketApp, message: str):
             if self.logger.level <= logging.DEBUG:
                 self.logger.debug(f"on_message invoked: (message: {message})")
             self.enqueue_message(message)
-            status, res_content = self.handle_interactive_chat_response(message)
+            status, res_msg = self.handle_interactive_chat_response(message)
 
             if self.chat_interactive:
                 if status != SparkMessageStatus.DataEnd:
@@ -326,12 +347,12 @@ class SparkAISocketModeClient(BaseSocketModeClient):
 
                     self.chat_inputer.release_lock()
             else:
-                self.response_queue.put(res_content)
+                self.response_queue.put(res_msg)
 
-                if status != SparkMessageStatus.DataEnd:
-                    self.chat_outputer.should_return = False
-                else:
-                    self.chat_outputer.should_return = True
+                # if status != SparkMessageStatus.DataEnd:
+                #     self.chat_outputer.should_return = False
+                # else:
+                #     pass
 
             for listener in self.on_message_listeners:
                 listener(ws, message)
@@ -343,6 +364,8 @@ class SparkAISocketModeClient(BaseSocketModeClient):
 
             if isinstance(error, websocket.WebSocketConnectionClosedException):
                 self.logger.error(f"Got WebSocketConnectionClosedException: {error}")
+                self.closed = True
+
                 if self.auto_reconnect_enabled:
                     self.logger.info("Received WebSocketConnectionClosedException event. Reconnecting...")
                     self.connect_to_new_endpoint()
@@ -392,22 +415,56 @@ class SparkAISocketModeClient(BaseSocketModeClient):
         if self.current_session is not None:
             self.current_session.close()
 
-    def chat_in(self, message: str):
+    def chat_with_histories(self, messages: List[ChatMessage]) -> ResponseMessage:
+        if self.chat_interactive:
+            raise Exception("Not support when chat_interactive enabled...")
+        rdata = ChatBody(self.app_id, messages, max_tokens=self.max_token).json()
+        self.chatting_lock.acquire()
+        if self.is_connected():
+            should_return = False
+            self.send_message(rdata)
+            merged_result = ResponseMessage()
+            while not should_return:
+                if not self.response_queue.empty():
+                    msg = self.response_queue.get(block=False)
+                    if msg:
+                        merged_result.content += msg.content
+                        merged_result.question_tokens = msg.question_tokens
+                        merged_result.total_tokens = msg.total_tokens
+                        merged_result.completion_tokens = msg.completion_tokens
+                        self.logger.debug("question_tokens: %d", msg.question_tokens)
+                        self.logger.debug("total_tokens:  %d", msg.total_tokens)
+                        self.logger.debug("completion_tokens:  %d", msg.completion_tokens)
+                        self.logger.debug("prompt_tokens:  %d", msg.prompt_tokens)
+                        if msg.status == SparkMessageStatus.DataEnd:
+                            should_return = True
+                        else:
+                            should_return = False
+            # self.chat_input_lock.acquire()
+            # self.chat_outputer.merged_result =  ResponseMessage()
+            self.chatting_lock.release()
+            return merged_result
+
+        return None
+
+    def chat_in(self, message):
         if self.chat_interactive:
             raise Exception("Not support when chat_interactive enabled...")
         rdata = ChatBody(self.app_id, message, max_tokens=self.max_token).json()
 
-        self.connect_operation_lock.acquire()
+        self.chatting_lock.acquire()
         if self.is_connected():
             self.send_message(rdata)
-            with self.chat_lock:
-                result = self.chat_outputer.result
-                self.connect_operation_lock.release()
+            with self.chat_input_lock:
+                result = self.chat_outputer.merged_result
+                # self.chat_outputer.merged_result =  ResponseMessage()
+
+                self.chatting_lock.release()
                 if self.conversation_memory is not None:
-                    self.conversation_memory.add_ai_message(result)
+                    self.conversation_memory.add_ai_message(result.content)
                 return result
 
-        return ""
+        return None
 
     def send_message(self, message: str) -> None:
         if self.logger.level <= logging.DEBUG:

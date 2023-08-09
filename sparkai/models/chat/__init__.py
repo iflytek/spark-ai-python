@@ -3,7 +3,7 @@
 """ 
 @author: nivic ybyang7
 @license: Apache Licence 
-@file: __init__.py
+@file: __init__.py.py
 @time: 2023/04/29
 @contact: ybyang7@iflytek.com
 @site:  
@@ -65,16 +65,17 @@ class Choices():
 
 
 class Text():
-    def __init__(self, completion_tokens: int, prompt_tokens: int, total_tokens: int):
+    def __init__(self, completion_tokens: int, prompt_tokens: int, total_tokens: int, question_tokens: int):
         self.completion_tokens: int = completion_tokens
         self.prompt_tokens: int = prompt_tokens
         self.total_tokens: int = total_tokens
+        self.question_tokens: int = question_tokens
 
 
 class Usage():
     def __init__(self, text: Text):
         if isinstance(text, Text):
-            self.text = Text
+            self.text = text
         else:
             self.text = Text(**text)
 
@@ -86,7 +87,7 @@ class Payload():
             self.choices = Choices(**choices)
         else:
             self.choices = choices
-        if not usage:
+        if usage:
             if isinstance(usage, Usage):
                 self.usage = usage
             elif isinstance(usage, dict):
@@ -98,12 +99,15 @@ class ChatResponse():
         self.header = Header(**header)
         if payload:
             self.payload = Payload(**payload)
+        else:
+            self.payload = None
 
 
 class ChatBody():
     def __init__(self, app_id, question, uid="12345", domain="general", random_threshold=0, max_tokens=2048,
-                 memory: ChatMessageHistory = None):
+                 memory: ChatMessageHistory = None,top_k=1, temperature=0.4):
         self.memory = memory
+        use_memory = False
         self.req_data = {
             "header": {
                 "app_id": app_id,
@@ -114,7 +118,9 @@ class ChatBody():
                     "domain": domain,
                     "random_threshold": random_threshold,
                     "max_tokens": max_tokens,
-                    "auditing": "default"
+                    "auditing": "default",
+                    "temperature": temperature,
+                    "top_k": top_k
                 }
             },
             "payload": {
@@ -126,11 +132,20 @@ class ChatBody():
                 }
             }
         }
-        if self.memory is not None:
-            self.memory.add_user_message(question)
-            #self.memory.to_list()
-            self.req_data['payload']['message']['text'] = self.memory.to_list()
+        if memory:
+            use_memory = True
 
+        if isinstance(question, list):
+            # 如果用户传递自己的上下history list 则忽略memory todo need argument
+            use_memory = False
+            self.req_data['payload']['message']['text'] = question
+        else:
+            self.req_data['payload']['message']['text'][0]['content'] = question
+
+        if use_memory:
+            self.memory.add_user_message(question)
+            # self.memory.to_list()
+            self.req_data['payload']['message']['text'] = self.memory.to_list()
 
     def json(self):
         return json.dumps(self.req_data)
