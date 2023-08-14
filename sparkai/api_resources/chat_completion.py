@@ -31,6 +31,7 @@
 #  Proin dapibus sapien vel ante. Aliquam erat volutpat. Pellentesque sagittis ligula eget metus.
 #  Vestibulum commodo. Ut rhoncus gravida arcu.
 import json
+import os
 import time
 from typing import Union, Optional, List, Callable, Tuple
 
@@ -86,7 +87,8 @@ class SparkOnceWebsocket():
             build_auth_request_url(self.ws_url, method="GET", api_key=self.api_key, api_secret=self.api_secret))
 
     def send_messages(self, messages: List[ChatMessage]):
-        req_data = ChatBody(self.app_id, messages, max_tokens=self.max_token).json()
+        domain = os.environ.get("SPARK_DOMAIN", "general")
+        req_data = ChatBody(self.app_id, messages, domain=domain, max_tokens=self.max_token).json()
         self.ws.send(req_data)
         lastFrame = False
         full_msg_response = ''

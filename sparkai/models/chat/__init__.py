@@ -104,7 +104,7 @@ class ChatResponse():
 
 
 class ChatBody():
-    def __init__(self, app_id, question, uid="12345", domain="general", random_threshold=0, max_tokens=2048,
+    def __init__(self, app_id, question, uid="12345", domain="plugin", random_threshold=0, max_tokens=2048,
                  memory: ChatMessageHistory = None,top_k=1, temperature=0.4):
         self.memory = memory
         use_memory = False

@@ -39,6 +39,7 @@ import os
 print("getting config from env: SPARK_API_BASE,SPARK_APP_ID,SPARK_API_KEY,SPARK_API_SECRET")
 api_base = os.environ.get("SPARK_API_BASE", "wss://aichat.xf-yun.com/v1/chat")
 api_type = os.environ.get("SPARK_API_TYPE", "spark")
+api_domain = os.environ.get("SPARK_DOMAIN", "general")
 
 app_id = os.environ.get("SPARK_APP_ID")
 api_key = os.environ.get("SPARK_API_KEY")

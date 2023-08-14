@@ -7,6 +7,7 @@ from logging import Logger
 from threading import Lock
 from typing import Dict, Union, Any, Optional, List, Callable
 
+import os
 from sparkai.socket_mode.interval_runner import IntervalRunner
 from sparkai.socket_mode.listeners import (
     WebSocketMessageListener,
@@ -16,8 +17,8 @@ from sparkai.socket_mode.request import SocketModeRequest
 from sparkai.socket_mode.response import SocketModeResponse
 from sparkai.xf_util import build_auth_request_url
 
-defaultAIChatUrl = "wss://aichat.xf-yun.com/v1/chat"
-
+du = "wss://aichat.xf-yun.com/v1/chat"
+defaultAIChatUrl =  os.environ.get("SPARK_API_BASE", du)
 
 class BaseSocketModeClient:
     logger: Logger
