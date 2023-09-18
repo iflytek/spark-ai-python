@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "spark-ai-python"
-version = "0.1.5"
+version = "0.1.7"
 description = "a sdk for iflytek's spark LLM."
 authors = ["whybeyoung <ybyang7@iflytek.com>"]
 license = "MIT"

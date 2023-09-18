@@ -80,13 +80,14 @@ class SparkOnceWebsocket():
 
         self.stopping = False
         self.ws = websocket.WebSocket()
-        self.connect()
 
     def connect(self):
         self.ws.connect(
             build_auth_request_url(self.ws_url, method="GET", api_key=self.api_key, api_secret=self.api_secret))
 
     def send_messages(self, messages: List[ChatMessage]):
+        self.connect()
+
         domain = os.environ.get("SPARK_DOMAIN", "general")
         req_data = ChatBody(self.app_id, messages, domain=domain, max_tokens=self.max_token).json()
         self.ws.send(req_data)
@@ -94,6 +95,7 @@ class SparkOnceWebsocket():
         full_msg_response = ''
         code = 0
         is_last = False
+        self.stopping = False
         logger.debug(messages)
         while not self.stopping and not lastFrame:
             lastFrame, code, msg = self.handle_response(self.ws.recv())
@@ -127,7 +129,7 @@ class SparkOnceWebsocket():
             logger.error(f"error status: not supported this status code, {res.header.status}")
 
         if res.header.code != 0:
-            logger.error(f"error code:  {res.header.code}, {res.header.message}")
+            logger.error(f"sid: {res.header.sid}, error code:  {res.header.code}, {res.header.message}")
         code = res.header.code
         last = True if res.header.status == SparkMessageStatus.DataEnd else False
         msg = msg
