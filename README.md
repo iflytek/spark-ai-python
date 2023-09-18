@@ -36,6 +36,31 @@ python setup.py install
 
 * 备注: 推荐使用   [WS短连接方式 ](#WS短连接方式 )
 
+## WS短连接方式 
+
+**(推荐使用该方式使用)**
+
+```python
+
+
+from sparkai.api_resources import *
+from sparkai.api_resources.chat_completion import *
+from sparkai.schema import ChatMessage
+from sparkai.models.chat import ChatBody, ChatResponse
+
+if __name__ == '__main__':
+    c = SparkOnceWebsocket(api_key=api_key, api_secret=api_secret, app_id=app_id, api_base=api_base)
+    messages = [
+        {'role': 'user', 'content': '请帮我完成目标:\n\n帮我生成一个 2到2000的随机数\n\n'}, {'role': 'assistant',
+                                                                           'content': '{\n\n"thoughts": {\n\n"text": "Generate a random number between 2 and 2000.",\n\n"reasoning": "To complete this task, I will need to access the internet for information gathering.",\n\n"plan": "I will use the random_number command with the min and max arguments set to 2 and 2000, respectively.",\n\n"criticism": "",\n\n"speak": "The random number generated is: 1587."\n\n},\n\n"command": {\n\n"name": "random_number",\n\n"args": {\n\n"min": "2",\n\n"max": "2000"\n\n}\n\n}\n\n}'},
+        {'role': 'user', 'content': '\n请帮我完成目标:\n\n帮我把这个随机数 发给 ybyang7@iflytek.com 并告诉他这个随机数很重要\n\n'}]
+
+    c.send_messages(messages)
+
+
+```
+
+
 ### 交互式(建议Demo使用)
 
 ```python
@@ -136,36 +161,14 @@ Anwser:  无论是否秃顶，洗头时应该使用洗发水而不是洗面奶�
 对于秃顶的人来说，使用洗发水能够更有效地清洁头皮和毛发根部，有助于减少头皮屑、防止毛囊感染和脱发等问题。因此，建议秃顶的人选择适合自己发质的洗发水进行清洁。
 ```
 
-## WS短连接方式 
 
-**(推荐使用该方式使用)**
-
-```python
-
-
-from sparkai.api_resources import *
-from sparkai.api_resources.chat_completion import *
-from sparkai.schema import ChatMessage
-from sparkai.models.chat import ChatBody, ChatResponse
-
-if __name__ == '__main__':
-    c = SparkOnceWebsocket(api_key=api_key, api_secret=api_secret, app_id=app_id, api_base=api_base)
-    messages = [
-        {'role': 'user', 'content': '请帮我完成目标:\n\n帮我生成一个 2到2000的随机数\n\n'}, {'role': 'assistant',
-                                                                           'content': '{\n\n"thoughts": {\n\n"text": "Generate a random number between 2 and 2000.",\n\n"reasoning": "To complete this task, I will need to access the internet for information gathering.",\n\n"plan": "I will use the random_number command with the min and max arguments set to 2 and 2000, respectively.",\n\n"criticism": "",\n\n"speak": "The random number generated is: 1587."\n\n},\n\n"command": {\n\n"name": "random_number",\n\n"args": {\n\n"min": "2",\n\n"max": "2000"\n\n}\n\n}\n\n}'},
-        {'role': 'user', 'content': '\n请帮我完成目标:\n\n帮我把这个随机数 发给 ybyang7@iflytek.com 并告诉他这个随机数很重要\n\n'}]
-
-    c.send_messages(messages)
-
-
-```
 ## 欢迎贡献
 
 扫码加入交流群
 
 ## 已知问题
 
-* 5分钟链路没有任何交互，服务的会强制关闭链接
+* WS 长连接5分钟链路没有任何交互，服务的会强制关闭链接
 
 ## 致谢
 
