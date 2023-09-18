@@ -1,4 +1,4 @@
-# 讯飞星火大模型接入库 (unofficial)
+# 讯飞星火大模型接入库 (opensource)
 
 本Python SDK库帮助用户更快体验讯飞星火大模型
 
