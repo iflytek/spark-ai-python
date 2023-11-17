@@ -36,7 +36,6 @@ import time
 from typing import Union, Optional, List, Callable, Tuple
 
 import websocket
-from openai.api_resources.abstract.engine_api_resource import EngineAPIResource
 from sparkai.socket_mode.websocket_client import SparkMessageStatus, ResponseMessage
 
 from sparkai.schema import ChatMessage
@@ -45,19 +44,6 @@ from sparkai.models.chat import ChatBody, ChatResponse
 from sparkai.xf_util import build_auth_request_url
 from sparkai.log.logger import logger
 
-
-class ChatCompletion(EngineAPIResource):
-    engine_required = False
-    OBJECT_NAME = "chat.completions"
-
-    @classmethod
-    def create(cls, *args, **kwargs):
-        """
-        启动一个once式的 WS短连接并返回会话响应
-        """
-        start = time.time()
-        timeout = kwargs.pop("timeout", None)
-        ws = websocket.WebSocket()
 
 
 class SparkOnceWebsocket():
