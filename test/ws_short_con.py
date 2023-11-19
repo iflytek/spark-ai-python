@@ -16,3 +16,4 @@ if __name__ == "__main__":
 
     for token in c.send_messages_generator(messages):
         print(token)
+    c.close()

@@ -125,6 +125,7 @@ class SparkOnceWebsocket():
             if code != 0 or lastFrame:
                 self.stopping = True
                 logger.info(full_msg_response)
+        self.close()
         return code, full_msg_response
 
     def handle_response(self, message) -> (int, str):
