@@ -105,6 +105,27 @@ class SparkOnceWebsocket():
                 self.stopping = True
                 logger.info(full_msg_response)
         return code, full_msg_response
+    def send_messages_generator(self, messages: List[ChatMessage]):
+        self.connect()
+
+        domain = os.environ.get("SPARK_DOMAIN", "general")
+        req_data = ChatBody(self.app_id, messages, domain=domain, max_tokens=self.max_token).json()
+        self.ws.send(req_data)
+        lastFrame = False
+        full_msg_response = ''
+        code = 0
+        is_last = False
+        self.stopping = False
+        logger.debug(messages)
+        while not self.stopping and not lastFrame:
+            lastFrame, code, msg = self.handle_response(self.ws.recv())
+            if msg:
+                full_msg_response += msg.content
+                yield msg.content
+            if code != 0 or lastFrame:
+                self.stopping = True
+                logger.info(full_msg_response)
+        return code, full_msg_response
 
     def handle_response(self, message) -> (int, str):
         temp_result = json.loads(message)
