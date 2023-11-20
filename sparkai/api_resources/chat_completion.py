@@ -77,6 +77,8 @@ class SparkOnceWebsocket():
         self.api_key = api_key
         self.api_secret = api_secret
         self.max_token = max_tokens
+        self.temperature = temperature
+        self.top_p = top_p
 
         self.stopping = False
         self.ws = websocket.WebSocket()
@@ -89,7 +91,12 @@ class SparkOnceWebsocket():
         self.connect()
 
         domain = os.environ.get("SPARK_DOMAIN", "general")
-        req_data = ChatBody(self.app_id, messages, domain=domain, max_tokens=self.max_token).json()
+        req_data = ChatBody(self.app_id, 
+                            messages, 
+                            domain=domain, 
+                            max_tokens=self.max_token,
+                            temperature=self.temperature,
+                            top_k=self.top_p).json()
         self.ws.send(req_data)
         lastFrame = False
         full_msg_response = ''
