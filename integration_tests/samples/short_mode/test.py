@@ -47,4 +47,4 @@ if __name__ == '__main__':
 
     messages = [{'role': 'user', 'content': '帮我修复下如下Json，回复内容仅返回修复后的json即可:\n\n{"thoughts": {"reasoning": "首先，我们需要使用Python的requests库来发送HTTP请求，获取百度首页的HTML内容。然后，我们可以使用BeautifulSoup库来解析HTML内容，提取出我们需要的信息。最后，我们可以将提取出的信息保存到文件中。"}}, "tool": {"name": "CodingTool", "args": {"code_description": "编写代码以爬取百度首页并提取信息", "file_name": "baidu_crawler.py"}}}'}]
     print(messages[0]['content'])
-    c.send_messages(messages)
+    c, r = c.send_messages(messages)

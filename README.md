@@ -1,6 +1,6 @@
 # 讯飞星火大模型接入库 (opensource)
 
-本Python SDK库帮助用户更快体验讯飞星火大模型
+本Python SDK库帮助用户更快体验讯飞星火大模型 [项目正在开发中]
 
 ## 特性
 
@@ -8,7 +8,15 @@
 - [ ] 发布pypi
 - [x] 移植Langchain Memory实现，简单几行代码实现chat功能
 - [x] Memory支持: `in_memory`, `file`, `postgres`, `redis`
-- [ ] 断线自动重连
+- [ ] WS断线自动重连
+
+## 近期规划新特性[待演进]
+
+- [ ] 支持 HTTP SPARK API
+- [ ] 本地代理方式星火SparkAPI转OpenAI接口
+- [ ] SDK方式适配OpenAI接口 ChatCompletion接口 
+- [ ] SDK方式适配OpenAI Embedding接口
+- [ ] 集成星火开源框架 Doc Examples , AutoGPT/AutoGen/MetaGpt/Langchain/PromptFlow/.... 等
 
 ## 安装
 
@@ -169,6 +177,11 @@ Anwser:  无论是否秃顶，洗头时应该使用洗发水而不是洗面奶�
 ## 已知问题
 
 * WS 长连接5分钟链路没有任何交互，服务的会强制关闭链接
+
+## URL
+
+* N方向： ws(s)://spark-api-n.xf-yun.com/v1.1/chat
+* wss://spark-api.xf-yun.com/v2.1/chat
 
 ## 致谢
 

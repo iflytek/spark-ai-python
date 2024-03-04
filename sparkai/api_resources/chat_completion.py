@@ -31,6 +31,7 @@
 #  Proin dapibus sapien vel ante. Aliquam erat volutpat. Pellentesque sagittis ligula eget metus.
 #  Vestibulum commodo. Ut rhoncus gravida arcu.
 import json
+import logging
 import os
 import time
 from typing import Union, Optional, List, Callable, Tuple
@@ -57,15 +58,17 @@ class SparkOnceWebsocket():
                  top_p=None,
                  request_id=None,
                  api_version=None,
-                 organization=None):
+                 organization=None,
+                 log_level="error"):
         self.ws_url = api_base
         self.app_id = app_id
         self.api_key = api_key
         self.api_secret = api_secret
         self.max_token = max_tokens
-
+        self.log_level = log_level
         self.stopping = False
         self.ws = websocket.WebSocket()
+        logger.setLevel(log_level)
 
     def connect(self):
         self.ws.connect(

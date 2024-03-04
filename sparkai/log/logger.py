@@ -31,21 +31,37 @@ class SingletonMeta(type):
 
 
 class Logger(metaclass=SingletonMeta):
-    def __init__(self, logger_name='SparkPythonSDK', log_level=logging.DEBUG):
+    def __init__(self, logger_name='SparkPythonSDK', log_level=logging.ERROR):
         if not hasattr(self, 'logger'):
             self.logger = logging.getLogger(logger_name)
             self.logger.setLevel(log_level)
             self.logger.makeRecord = self._make_custom_log_record
 
-            console_handler = logging.StreamHandler()
-            console_handler.setLevel(log_level)
+            self.console_handler = logging.StreamHandler()
+            self.console_handler.setLevel(log_level)
 
             formatter = logging.Formatter(
                 '%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s',
                 datefmt='%Y-%m-%d %H:%M:%S %Z')
 
-            console_handler.setFormatter(formatter)
-            self.logger.addHandler(console_handler)
+            self.console_handler.setFormatter(formatter)
+            self.logger.addHandler(self.console_handler)
+
+    def setLevel(self, level):
+        if level not in ["debug", "info", "warning", "error", "trace"]:
+            level = logging.ERROR
+        elif level == "debug":
+            level = logging.DEBUG
+        elif level == "info":
+            level = logging.INFO
+        elif level == "error":
+            level = logging.ERROR
+        elif level == "trace":
+            level = logging.DEBUG
+        elif level == "warning" or leve == "warn":
+            level = logging.WARNING
+        self.logger.setLevel(level)
+        self.console_handler.setLevel(level)
 
     def _make_custom_log_record(self, name, level, fn, lno, msg, args, exc_info, func=None, extra=None, sinfo=None):
         return CustomLogRecord(name, level, fn, lno, msg, args, exc_info, func=func, extra=extra, sinfo=sinfo)
