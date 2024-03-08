@@ -1,12 +1,12 @@
 from typing import TYPE_CHECKING
-from .._client import SparkAI
+from ._ws_client import WsClient
 
 if TYPE_CHECKING:
-    from .._client import SparkAI
+    from ._ws_client import WsClient
 
 
 class BaseAPI:
-    _client: SparkAI
+    _client: WsClient
 
-    def __init__(self, client: SparkAI) -> None:
+    def __init__(self, client: WsClient) -> None:
         self._client = client

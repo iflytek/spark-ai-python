@@ -51,7 +51,7 @@ class SparkAI(WsClient):
             api_secret: str | None = None,
             app_id: str | None = None,
             domain: str | None = None,
-            base_url: str | None = None
+            base_url="wss://spark-api.xf-yun.com"
     ) -> None:
         if api_key is None:
             api_key = os.environ.get("SPARKAI_API_KEY")
@@ -79,6 +79,8 @@ class SparkAI(WsClient):
             base_url = os.environ.get("SPARKAI_BASE_URL")
         if base_url is None:
             base_url = f"wss://spark-api.xf-yun.com"
+
+        self.base_url = base_url    
         from .version import __version__
         super().__init__(
             appid=app_id,

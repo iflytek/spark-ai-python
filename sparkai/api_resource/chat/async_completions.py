@@ -39,7 +39,6 @@ from ...core._base_api import BaseAPI
 from ...core._base_type import NotGiven, NOT_GIVEN, Headers
 from ...types.chat.chat_completion import Completion
 
-
 class AsyncCompletions(BaseAPI):
     def __init__(self, client) -> None:
         super().__init__(client)
