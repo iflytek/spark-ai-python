@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "sparkproxy"
+version = "0.1.0"
+description = ""
+authors = ["mingduan <mingduan@iflytek.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = {extras = ["all"], version = "^0.110.0"}
+nest-asyncio = "^1.6.0"
+websocket-client = "^1.7.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
