@@ -33,25 +33,15 @@
 
 
 from __future__ import annotations
-
 from typing import Union, List, Optional, TYPE_CHECKING
-
-import httpx
 from typing_extensions import Literal
-
 from ...core._base_api import BaseAPI
 from ...core._base_type import NotGiven, NOT_GIVEN, Headers
-from ...core._http_client import make_user_request_input
-from ...core._sse_client import StreamResponse
 from ...types.chat.chat_completion import Completion
-from ...types.chat.chat_completion_chunk import ChatCompletionChunk
-
-if TYPE_CHECKING:
-    from ..._client import ZhipuAI
 
 
 class Completions(BaseAPI):
-    def __init__(self, client: "ZhipuAI") -> None:
+    def __init__(self, client) -> None:
         super().__init__(client)
 
     def create(
@@ -60,7 +50,6 @@ class Completions(BaseAPI):
             model: str,
             request_id: Optional[str] | NotGiven = NOT_GIVEN,
             do_sample: Optional[Literal[False]] | Literal[True] | NotGiven = NOT_GIVEN,
-            stream: Optional[Literal[False]] | Literal[True] | NotGiven = NOT_GIVEN,
             temperature: Optional[float] | NotGiven = NOT_GIVEN,
             top_p: Optional[float] | NotGiven = NOT_GIVEN,
             max_tokens: int | NotGiven = NOT_GIVEN,
@@ -72,34 +61,27 @@ class Completions(BaseAPI):
             tool_choice: str | NotGiven = NOT_GIVEN,
             extra_headers: Headers | None = None,
             disable_strict_validation: Optional[bool] | None = None,
-            timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> Completion | StreamResponse[ChatCompletionChunk]:
-        _cast_type = Completion
-        _stream_cls = StreamResponse[ChatCompletionChunk]
-        if disable_strict_validation:
-            _cast_type = object
-            _stream_cls = StreamResponse[object]
-        return self._post(
-            "/chat/completions",
-            body={
-                "model": model,
-                "request_id": request_id,
-                "temperature": temperature,
-                "top_p": top_p,
-                "do_sample": do_sample,
-                "max_tokens": max_tokens,
-                "seed": seed,
-                "messages": messages,
-                "stop": stop,
-                "sensitive_word_check": sensitive_word_check,
-                "stream": stream,
-                "tools": tools,
-                "tool_choice": tool_choice,
-            },
-            options=make_user_request_input(
-                extra_headers=extra_headers,
-            ),
-            cast_type=_cast_type,
-            enable_stream=stream or False,
-            stream_cls=_stream_cls,
-        )
+            uid: Optional[str] | None = None,
+    ) -> Completion:
+        if len(model) == 0:
+            model = "v3.5"
+
+        uri = "/v3.5/chat"
+        domain = "generalv3.5"
+        if model == "v3.5":
+            domain = "generalv3.5"
+            uri = "/v3.5/chat"
+        elif model == "v3":
+            domain = "generalv3"
+            uri = "/v3.1/chat"
+        elif model == "v2":
+            domain = "generalv2"
+            uri = "/v2.1/chat"
+        elif model == "v1.5":
+            domain = "general"
+            uri = "/v1.1/chat"
+
+        self._client.uri = uri    
+        
+        code, resp = self._client.once(messages=messages)
+        return resp
