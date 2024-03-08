@@ -5,8 +5,6 @@ import hashlib
 import datetime
 from urllib.parse import urlencode
 
-API_KEY = "1050d3bf03e94f816619bc241d9e0aa9"
-API_SECRET = "MGI2MDUyMTA0MThiNjZkZTRkYmI2OGVm"
 
 # 接口地址，接口地址表单形式，包含了token
 url = 'wss://spark-api.xf-yun.com/v3.1/chat'

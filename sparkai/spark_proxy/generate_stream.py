@@ -3,7 +3,7 @@ from openai_types import ChatMessage, Function, Tool, FunctionCall, ToolCall
 
 from spark_api import SparkAPI
 
-s_k = "e1ba8c0c3deca84313ac8a3b6e9b9111&NGIwZTBmYjJkOTE4ZjFhNDY3N2M0YTcy&4eea957b"
+s_k = "key&secret&appid"
 
 
 def generate_stream(

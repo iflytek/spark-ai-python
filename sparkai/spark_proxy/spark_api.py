@@ -10,8 +10,7 @@ nest_asyncio.apply()
 loop = asyncio.get_event_loop()
 
 model_map = {
-    'generalv3.5': 'wss://spark-api.xf-yun.com/v3.2/chat',
-    'iflycode.ge': 'wss://spark-api.xf-yun.com/v3.2/chat'
+    'generalv3.5': 'wss://spark-api.xf-yun.com/v3.2/chat'
 }
 
 
