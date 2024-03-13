@@ -3,11 +3,11 @@ import uuid
 from fastapi import FastAPI
 
 from fastapi.responses import JSONResponse, StreamingResponse
-from openai_types import ChatInput, ChatCompletion, Choice, StreamChoice, ChatCompletionChunk, ChatMessage
-from generate_message import generate_message
-from generate_stream import generate_stream
+from sparkai.spark_proxy.openai_types import ChatInput, ChatCompletion, Choice, StreamChoice, ChatCompletionChunk, ChatMessage
+from sparkai.spark_proxy.generate_message import generate_message
+from sparkai.spark_proxy.generate_stream import generate_stream
 
-app = FastAPI(title="Spark Proxy API")
+app = FastAPI(title="Spark Proxy OpenAI-Compatible API")
 
 
 @app.post("/v1/chat/completions")

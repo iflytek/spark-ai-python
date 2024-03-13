@@ -1,5 +1,5 @@
 import json
-from spark_auth import create_url
+from sparkai.spark_proxy.spark_auth import create_url
 from urllib.parse import urlparse
 import websockets
 import asyncio
@@ -10,9 +10,10 @@ nest_asyncio.apply()
 loop = asyncio.get_event_loop()
 
 model_map = {
-    'generalv3.5': 'wss://spark-api.xf-yun.com/v3.2/chat'
+'generalv3.5': 'wss://spark-api.xf-yun.com/v3.2/chat',
+'iflycode.ge': 'wss://spark-api.xf-yun.com/v3.2/chat',
+'generalv3.5tipre': 'wss://spark-openapi.cn-huabei-1.xf-yun.com/v3.5/chat'
 }
-
 
 class SparkAPI:
 
@@ -39,7 +40,6 @@ class SparkAPI:
                 "app_id": self.appid
             },
             "parameter": {
-
                 "chat": {
                     "domain": self.model,
                     'temperature': self.temperature,

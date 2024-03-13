@@ -1,7 +1,7 @@
-from openai_types import ChatMessage, Function, FunctionCall, Tool, ToolCall
+from sparkai.spark_proxy.openai_types import ChatMessage, Function, FunctionCall, Tool, ToolCall
 from typing import List, Optional
 
-from spark_api import SparkAPI
+from sparkai.spark_proxy.spark_api import SparkAPI
 
 s_k = "key&secret&appid"
 
