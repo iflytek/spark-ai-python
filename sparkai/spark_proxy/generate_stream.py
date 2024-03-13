@@ -8,18 +8,21 @@ s_k = "key&secret&appid"
 
 def generate_stream(
         *,
+        key: str,
         model: str,
         messages: List[ChatMessage],
         functions: Optional[List[Function]] = None,
         tools: Optional[List[Tool]] = None,
         temperature: float = 0.7,
+        stop: list[str] = None
 ) -> Generator[Dict, Any, Any]:
-    s_api = SparkAPI(s_k, model=model, temperature=temperature)
-    print('generate_message ~~~~~')
-    print('messages:', messages)
-    print('functions:', functions)
-    print('tools:', tools)
-    print('temperature:', temperature)
+
+    s_api = SparkAPI(key, model=model, temperature=temperature)
+    # print('generate_message ~~~~~')
+    # print('messages:', messages)
+    # print('functions:', functions)
+    # print('tools:', tools)
+    # print('temperature:', temperature)
 
     function_list = []
     if functions:

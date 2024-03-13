@@ -1,20 +1,24 @@
 import json
 import uuid
-from fastapi import FastAPI
+from fastapi import FastAPI, Header
 
 from fastapi.responses import JSONResponse, StreamingResponse
-from sparkai.spark_proxy.openai_types import ChatInput, ChatCompletion, Choice, StreamChoice, ChatCompletionChunk, ChatMessage
-from sparkai.spark_proxy.generate_message import generate_message
-from sparkai.spark_proxy.generate_stream import generate_stream
+from openai_types import ChatInput, ChatCompletion, Choice, StreamChoice, ChatCompletionChunk, ChatMessage
+from generate_message import generate_message
+from generate_stream import generate_stream
 
-app = FastAPI(title="Spark Proxy OpenAI-Compatible API")
+from typing import Annotated
+
+app = FastAPI(title="Spark Proxy API")
 
 
 @app.post("/v1/chat/completions")
-async def chat_endpoint(chat_input: ChatInput):
+async def chat_endpoint(authorization: Annotated[str | None, Header()] = None, chat_input: ChatInput = None):
+    key = authorization.split()[1]
     request_id = str(uuid.uuid4())
     if not chat_input.stream:
         response_message = generate_message(
+            key=key,
             messages=chat_input.messages,
             functions=chat_input.functions,
             tools=chat_input.tools,
@@ -32,17 +36,19 @@ async def chat_endpoint(chat_input: ChatInput):
 
     else:
         response_generator = generate_stream(
+            key=key,
             messages=chat_input.messages,
             functions=chat_input.functions,
             tools=chat_input.tools,
             temperature=chat_input.temperature,
             model=chat_input.model,  # type: ignore
+            stop=chat_input.stop
         )
 
         def get_response_stream():
             i = 0
+            r_str = """"""
             for response in response_generator:
-                print(response['payload']['choices']['text'][0]['content'], end='')
                 if 'function_call' in response['payload']['choices']['text'][0]:
                     response = {
                         'delta': ChatMessage(
@@ -52,6 +58,12 @@ async def chat_endpoint(chat_input: ChatInput):
                         'index': i
                     }
                 else:
+                    print(response['payload']['choices']['text'][0]['content'], end='')
+                    r_str += response['payload']['choices']['text'][0]['content']
+                    for s in chat_input.stop or []:
+                        if s in r_str:
+                            yield "data: [DONE]\n\n"
+                            return
                     response = {
                         'delta': ChatMessage(
                             content=response['payload']['choices']['text'][0]['content'],

@@ -72,6 +72,8 @@ class ChatInput(BaseModel):
     temperature: float = 0.9
     stream: bool = False
     model: str = None
+    stop: list[str] = None
+    key: str = None
 
 
 class Choice(BaseModel):

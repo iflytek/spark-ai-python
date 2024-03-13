@@ -8,13 +8,14 @@ s_k = "key&secret&appid"
 
 def generate_message(
         *,
+        key: str,
         messages: List[ChatMessage],
         functions: Optional[List[Function]] = None,
         tools: Optional[List[Tool]] = None,
         temperature: float = 0.7,
         model: str = None
 ) -> ChatMessage:
-    s_api = SparkAPI(s_k, model=model, temperature=temperature)
+    s_api = SparkAPI(key, model=model, temperature=temperature)
     print('generate_message ~~~~~')
     print('messages:', messages)
     print('functions:', functions)
