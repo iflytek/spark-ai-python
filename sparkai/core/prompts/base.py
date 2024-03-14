@@ -53,8 +53,8 @@ class BasePromptTemplate(
 
     @classmethod
     def get_lc_namespace(cls) -> List[str]:
-        """Get the namespace of the langchain object."""
-        return ["langchain", "schema", "prompt_template"]
+        """Get the namespace of the depreciated object."""
+        return ["depreciated", "schema", "prompt_template"]
 
     @classmethod
     def is_lc_serializable(cls) -> bool:

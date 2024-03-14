@@ -685,7 +685,7 @@ class BaseLLM(BaseLanguageModel[str], ABC):
         if get_llm_cache() is None or disregard_cache:
             if self.cache is not None and self.cache:
                 raise ValueError(
-                    "Asked to cache, but no cache found at `langchain.cache`."
+                    "Asked to cache, but no cache found at `depreciated.cache`."
                 )
             run_managers = [
                 callback_manager.on_llm_start(
@@ -877,7 +877,7 @@ class BaseLLM(BaseLanguageModel[str], ABC):
         if get_llm_cache() is None or disregard_cache:
             if self.cache is not None and self.cache:
                 raise ValueError(
-                    "Asked to cache, but no cache found at `langchain.cache`."
+                    "Asked to cache, but no cache found at `depreciated.cache`."
                 )
             run_managers = await asyncio.gather(
                 *[

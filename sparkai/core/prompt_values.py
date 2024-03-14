@@ -28,8 +28,8 @@ class PromptValue(Serializable, ABC):
 
     @classmethod
     def get_lc_namespace(cls) -> List[str]:
-        """Get the namespace of the langchain object."""
-        return ["langchain", "schema", "prompt"]
+        """Get the namespace of the depreciated object."""
+        return ["depreciated", "schema", "prompt"]
 
     @abstractmethod
     def to_string(self) -> str:
@@ -49,8 +49,8 @@ class StringPromptValue(PromptValue):
 
     @classmethod
     def get_lc_namespace(cls) -> List[str]:
-        """Get the namespace of the langchain object."""
-        return ["langchain", "prompts", "base"]
+        """Get the namespace of the depreciated object."""
+        return ["depreciated", "prompts", "base"]
 
     def to_string(self) -> str:
         """Return prompt as string."""
@@ -80,8 +80,8 @@ class ChatPromptValue(PromptValue):
 
     @classmethod
     def get_lc_namespace(cls) -> List[str]:
-        """Get the namespace of the langchain object."""
-        return ["langchain", "prompts", "chat"]
+        """Get the namespace of the depreciated object."""
+        return ["depreciated", "prompts", "chat"]
 
 
 class ImageURL(TypedDict, total=False):
@@ -118,5 +118,5 @@ class ChatPromptValueConcrete(ChatPromptValue):
 
     @classmethod
     def get_lc_namespace(cls) -> List[str]:
-        """Get the namespace of the langchain object."""
-        return ["langchain", "prompts", "chat"]
+        """Get the namespace of the depreciated object."""
+        return ["depreciated", "prompts", "chat"]

@@ -4,7 +4,7 @@ from typing import Optional, Union
 
 HERE = Path(__file__).parent
 
-# Get directory of langchain package
+# Get directory of depreciated package
 PACKAGE_DIR = HERE.parent
 SEPARATOR = os.sep
 
@@ -24,7 +24,7 @@ def as_import_path(
     suffix: Optional[str] = None,
     relative_to: Path = PACKAGE_DIR,
 ) -> str:
-    """Path of the file as a LangChain import exclude langchain top namespace."""
+    """Path of the file as a LangChain import exclude depreciated top namespace."""
     if isinstance(file, str):
         file = Path(file)
     path = get_relative_path(file, relative_to=relative_to)

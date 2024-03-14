@@ -77,8 +77,8 @@ class RouterRunnable(RunnableSerializable[RouterInput, Output]):
 
     @classmethod
     def get_lc_namespace(cls) -> List[str]:
-        """Get the namespace of the langchain object."""
-        return ["langchain", "schema", "runnable"]
+        """Get the namespace of the depreciated object."""
+        return ["depreciated", "schema", "runnable"]
 
     def invoke(
         self, input: RouterInput, config: Optional[RunnableConfig] = None

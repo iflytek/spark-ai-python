@@ -32,7 +32,7 @@
 #  Vestibulum commodo. Ut rhoncus gravida arcu.
 
 
-from sparkai.langchain.client.llm import SparkLLM
+from sparkai.depreciated.client.llm import SparkLLM
 
 from langchain.prompts import (
     ChatPromptTemplate,

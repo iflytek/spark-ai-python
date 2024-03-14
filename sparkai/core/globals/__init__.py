@@ -33,14 +33,14 @@ def get_verbose() -> bool:
             warnings.filterwarnings(
                 "ignore",
                 message=(
-                    ".*Importing verbose from langchain root module is no longer supported"
+                    ".*Importing verbose from depreciated root module is no longer supported"
                 ),
             )
             # N.B.: This is a workaround for an unfortunate quirk of Python's
             #       module-level `__getattr__()` implementation:
             # https://github.com/langchain-ai/langchain/pull/11311#issuecomment-1743780004
             #
-            # Remove it once `langchain.verbose` is no longer supported, and once all users
+            # Remove it once `depreciated.verbose` is no longer supported, and once all users
             # have migrated to using `set_verbose()` here.
             #
             # In the meantime, the `verbose` setting is considered True if either the old
@@ -65,13 +65,13 @@ def set_debug(value: bool) -> None:
         with warnings.catch_warnings():
             warnings.filterwarnings(
                 "ignore",
-                message="Importing debug from langchain root module is no longer supported",
+                message="Importing debug from depreciated root module is no longer supported",
             )
             # N.B.: This is a workaround for an unfortunate quirk of Python's
             #       module-level `__getattr__()` implementation:
             # https://github.com/langchain-ai/langchain/pull/11311#issuecomment-1743780004
             #
-            # Remove it once `langchain.debug` is no longer supported, and once all users
+            # Remove it once `depreciated.debug` is no longer supported, and once all users
             # have migrated to using `set_debug()` here.
             langchain.debug = value
     except ImportError:
@@ -91,13 +91,13 @@ def get_debug() -> bool:
         with warnings.catch_warnings():
             warnings.filterwarnings(
                 "ignore",
-                message="Importing debug from langchain root module is no longer supported",
+                message="Importing debug from depreciated root module is no longer supported",
             )
             # N.B.: This is a workaround for an unfortunate quirk of Python's
             #       module-level `__getattr__()` implementation:
             # https://github.com/langchain-ai/langchain/pull/11311#issuecomment-1743780004
             #
-            # Remove it once `langchain.debug` is no longer supported, and once all users
+            # Remove it once `depreciated.debug` is no longer supported, and once all users
             # have migrated to using `set_debug()` here.
             #
             # In the meantime, the `debug` setting is considered True if either the old
@@ -123,14 +123,14 @@ def set_llm_cache(value: Optional["BaseCache"]) -> None:
             warnings.filterwarnings(
                 "ignore",
                 message=(
-                    "Importing llm_cache from langchain root module is no longer supported"
+                    "Importing llm_cache from depreciated root module is no longer supported"
                 ),
             )
             # N.B.: This is a workaround for an unfortunate quirk of Python's
             #       module-level `__getattr__()` implementation:
             # https://github.com/langchain-ai/langchain/pull/11311#issuecomment-1743780004
             #
-            # Remove it once `langchain.llm_cache` is no longer supported, and
+            # Remove it once `depreciated.llm_cache` is no longer supported, and
             # once all users have migrated to using `set_llm_cache()` here.
             langchain.llm_cache = value
     except ImportError:
@@ -151,14 +151,14 @@ def get_llm_cache() -> "BaseCache":
             warnings.filterwarnings(
                 "ignore",
                 message=(
-                    "Importing llm_cache from langchain root module is no longer supported"
+                    "Importing llm_cache from depreciated root module is no longer supported"
                 ),
             )
             # N.B.: This is a workaround for an unfortunate quirk of Python's
             #       module-level `__getattr__()` implementation:
             # https://github.com/langchain-ai/langchain/pull/11311#issuecomment-1743780004
             #
-            # Remove it once `langchain.llm_cache` is no longer supported, and
+            # Remove it once `depreciated.llm_cache` is no longer supported, and
             # once all users have migrated to using `set_llm_cache()` here.
             #
             # In the meantime, the `llm_cache` setting returns whichever of

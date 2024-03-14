@@ -30,7 +30,7 @@
 #  Etiam sed turpis ac ipsum condimentum fringilla. Maecenas magna.
 #  Proin dapibus sapien vel ante. Aliquam erat volutpat. Pellentesque sagittis ligula eget metus.
 #  Vestibulum commodo. Ut rhoncus gravida arcu.
-from sparkai.langchain.service import spark_ws
+from sparkai.depreciated.service import spark_ws
 from fastapi import FastAPI
 
 app = FastAPI()

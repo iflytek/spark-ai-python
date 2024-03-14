@@ -3,144 +3,144 @@ from typing import Dict, Tuple
 # First value is the value that it is serialized as
 # Second value is the path to load it from
 SERIALIZABLE_MAPPING: Dict[Tuple[str, ...], Tuple[str, ...]] = {
-    ("langchain", "schema", "messages", "AIMessage"): (
+    ("depreciated", "schema", "messages", "AIMessage"): (
         "sparkai",
         "core",
         "messages",
         "ai",
         "AIMessage",
     ),
-    ("langchain", "schema", "messages", "AIMessageChunk"): (
+    ("depreciated", "schema", "messages", "AIMessageChunk"): (
         "sparkai",
         "core",
         "messages",
         "ai",
         "AIMessageChunk",
     ),
-    ("langchain", "schema", "messages", "BaseMessage"): (
+    ("depreciated", "schema", "messages", "BaseMessage"): (
         "sparkai",
         "core",
         "messages",
         "base",
         "BaseMessage",
     ),
-    ("langchain", "schema", "messages", "BaseMessageChunk"): (
+    ("depreciated", "schema", "messages", "BaseMessageChunk"): (
         "sparkai",
         "core",
         "messages",
         "base",
         "BaseMessageChunk",
     ),
-    ("langchain", "schema", "messages", "ChatMessage"): (
+    ("depreciated", "schema", "messages", "ChatMessage"): (
         "sparkai",
         "core",
         "messages",
         "chat",
         "ChatMessage",
     ),
-    ("langchain", "schema", "messages", "FunctionMessage"): (
+    ("depreciated", "schema", "messages", "FunctionMessage"): (
         "sparkai",
         "core",
         "messages",
         "function",
         "FunctionMessage",
     ),
-    ("langchain", "schema", "messages", "HumanMessage"): (
+    ("depreciated", "schema", "messages", "HumanMessage"): (
         "sparkai",
         "core",
         "messages",
         "human",
         "HumanMessage",
     ),
-    ("langchain", "schema", "messages", "SystemMessage"): (
+    ("depreciated", "schema", "messages", "SystemMessage"): (
         "sparkai",
         "core",
         "messages",
         "system",
         "SystemMessage",
     ),
-    ("langchain", "schema", "messages", "ToolMessage"): (
+    ("depreciated", "schema", "messages", "ToolMessage"): (
         "sparkai",
         "core",
         "messages",
         "tool",
         "ToolMessage",
     ),
-    ("langchain", "schema", "agent", "AgentAction"): (
+    ("depreciated", "schema", "agent", "AgentAction"): (
         "sparkai",
         "core",
         "agents",
         "AgentAction",
     ),
-    ("langchain", "schema", "agent", "AgentFinish"): (
+    ("depreciated", "schema", "agent", "AgentFinish"): (
         "sparkai",
         "core",
         "agents",
         "AgentFinish",
     ),
-    ("langchain", "schema", "prompt_template", "BasePromptTemplate"): (
+    ("depreciated", "schema", "prompt_template", "BasePromptTemplate"): (
         "sparkai",
         "core",
         "prompts",
         "base",
         "BasePromptTemplate",
     ),
-    ("langchain", "chains", "llm", "LLMChain"): (
+    ("depreciated", "chains", "llm", "LLMChain"): (
         "sparkai",
         "core",
         "chains",
         "llm",
         "LLMChain",
     ),
-    ("langchain", "prompts", "prompt", "PromptTemplate"): (
+    ("depreciated", "prompts", "prompt", "PromptTemplate"): (
         "sparkai",
         "core",
         "prompts",
         "prompt",
         "PromptTemplate",
     ),
-    ("langchain", "prompts", "chat", "MessagesPlaceholder"): (
+    ("depreciated", "prompts", "chat", "MessagesPlaceholder"): (
         "sparkai",
         "core",
         "prompts",
         "chat",
         "MessagesPlaceholder",
     ),
-    ("langchain", "llms", "openai", "OpenAI"): (
+    ("depreciated", "llms", "openai", "OpenAI"): (
         "sparkai",
         "core",
         "llms",
         "base",
         "OpenAI",
     ),
-    ("langchain", "prompts", "chat", "ChatPromptTemplate"): (
+    ("depreciated", "prompts", "chat", "ChatPromptTemplate"): (
         "sparkai",
         "core",
         "prompts",
         "chat",
         "ChatPromptTemplate",
     ),
-    ("langchain", "prompts", "chat", "HumanMessagePromptTemplate"): (
+    ("depreciated", "prompts", "chat", "HumanMessagePromptTemplate"): (
         "sparkai",
         "core",
         "prompts",
         "chat",
         "HumanMessagePromptTemplate",
     ),
-    ("langchain", "prompts", "chat", "SystemMessagePromptTemplate"): (
+    ("depreciated", "prompts", "chat", "SystemMessagePromptTemplate"): (
         "sparkai",
         "core",
         "prompts",
         "chat",
         "SystemMessagePromptTemplate",
     ),
-    ("langchain", "schema", "agent", "AgentActionMessageLog"): (
+    ("depreciated", "schema", "agent", "AgentActionMessageLog"): (
         "sparkai",
         "core",
         "agents",
         "AgentActionMessageLog",
     ),
-    ("langchain", "schema", "agent", "OpenAIToolAgentAction"): (
+    ("depreciated", "schema", "agent", "OpenAIToolAgentAction"): (
         "sparkai",
         "core",
         "agents",
@@ -148,388 +148,388 @@ SERIALIZABLE_MAPPING: Dict[Tuple[str, ...], Tuple[str, ...]] = {
         "openai_tools",
         "OpenAIToolAgentAction",
     ),
-    ("langchain", "prompts", "chat", "BaseMessagePromptTemplate"): (
+    ("depreciated", "prompts", "chat", "BaseMessagePromptTemplate"): (
         "sparkai",
         "core",
         "prompts",
         "chat",
         "BaseMessagePromptTemplate",
     ),
-    ("langchain", "schema", "output", "ChatGeneration"): (
+    ("depreciated", "schema", "output", "ChatGeneration"): (
         "sparkai",
         "core",
         "outputs",
         "chat_generation",
         "ChatGeneration",
     ),
-    ("langchain", "schema", "output", "Generation"): (
+    ("depreciated", "schema", "output", "Generation"): (
         "sparkai",
         "core",
         "outputs",
         "generation",
         "Generation",
     ),
-    ("langchain", "schema", "document", "Document"): (
+    ("depreciated", "schema", "document", "Document"): (
         "sparkai",
         "core",
         "documents",
         "base",
         "Document",
     ),
-    ("langchain", "output_parsers", "fix", "OutputFixingParser"): (
-        "langchain",
+    ("depreciated", "output_parsers", "fix", "OutputFixingParser"): (
+        "depreciated",
         "output_parsers",
         "fix",
         "OutputFixingParser",
     ),
-    ("langchain", "prompts", "chat", "AIMessagePromptTemplate"): (
+    ("depreciated", "prompts", "chat", "AIMessagePromptTemplate"): (
         "sparkai",
         "core",
         "prompts",
         "chat",
         "AIMessagePromptTemplate",
     ),
-    ("langchain", "output_parsers", "regex", "RegexParser"): (
-        "langchain",
+    ("depreciated", "output_parsers", "regex", "RegexParser"): (
+        "depreciated",
         "output_parsers",
         "regex",
         "RegexParser",
     ),
-    ("langchain", "schema", "runnable", "DynamicRunnable"): (
+    ("depreciated", "schema", "runnable", "DynamicRunnable"): (
         "sparkai",
         "core",
         "runnables",
         "configurable",
         "DynamicRunnable",
     ),
-    ("langchain", "schema", "prompt", "PromptValue"): (
+    ("depreciated", "schema", "prompt", "PromptValue"): (
         "sparkai",
         "core",
         "prompt_values",
         "PromptValue",
     ),
-    ("langchain", "schema", "runnable", "RunnableBinding"): (
+    ("depreciated", "schema", "runnable", "RunnableBinding"): (
         "sparkai",
         "core",
         "runnables",
         "base",
         "RunnableBinding",
     ),
-    ("langchain", "schema", "runnable", "RunnableBranch"): (
+    ("depreciated", "schema", "runnable", "RunnableBranch"): (
         "sparkai",
         "core",
         "runnables",
         "branch",
         "RunnableBranch",
     ),
-    ("langchain", "schema", "runnable", "RunnableWithFallbacks"): (
+    ("depreciated", "schema", "runnable", "RunnableWithFallbacks"): (
         "sparkai",
         "core",
         "runnables",
         "fallbacks",
         "RunnableWithFallbacks",
     ),
-    ("langchain", "schema", "output_parser", "StrOutputParser"): (
+    ("depreciated", "schema", "output_parser", "StrOutputParser"): (
         "sparkai",
         "core",
         "output_parsers",
         "string",
         "StrOutputParser",
     ),
-    ("langchain", "chat_models", "openai", "ChatOpenAI"): (
+    ("depreciated", "chat_models", "openai", "ChatOpenAI"): (
         "langchain_openai",
         "chat_models",
         "base",
         "ChatOpenAI",
     ),
-    ("langchain", "output_parsers", "list", "CommaSeparatedListOutputParser"): (
+    ("depreciated", "output_parsers", "list", "CommaSeparatedListOutputParser"): (
         "sparkai",
         "core",
         "output_parsers",
         "list",
         "CommaSeparatedListOutputParser",
     ),
-    ("langchain", "schema", "runnable", "RunnableParallel"): (
+    ("depreciated", "schema", "runnable", "RunnableParallel"): (
         "sparkai",
         "core",
         "runnables",
         "base",
         "RunnableParallel",
     ),
-    ("langchain", "chat_models", "azure_openai", "AzureChatOpenAI"): (
+    ("depreciated", "chat_models", "azure_openai", "AzureChatOpenAI"): (
         "langchain_openai",
         "chat_models",
         "azure",
         "AzureChatOpenAI",
     ),
-    ("langchain", "chat_models", "bedrock", "BedrockChat"): (
-        "langchain",
+    ("depreciated", "chat_models", "bedrock", "BedrockChat"): (
+        "depreciated",
         "chat_models",
         "bedrock",
         "BedrockChat",
     ),
-    ("langchain", "chat_models", "anthropic", "ChatAnthropic"): (
-        "langchain",
+    ("depreciated", "chat_models", "anthropic", "ChatAnthropic"): (
+        "depreciated",
         "chat_models",
         "anthropic",
         "ChatAnthropic",
     ),
-    ("langchain", "chat_models", "fireworks", "ChatFireworks"): (
-        "langchain",
+    ("depreciated", "chat_models", "fireworks", "ChatFireworks"): (
+        "depreciated",
         "chat_models",
         "fireworks",
         "ChatFireworks",
     ),
-    ("langchain", "chat_models", "google_palm", "ChatGooglePalm"): (
-        "langchain",
+    ("depreciated", "chat_models", "google_palm", "ChatGooglePalm"): (
+        "depreciated",
         "chat_models",
         "google_palm",
         "ChatGooglePalm",
     ),
-    ("langchain", "chat_models", "vertexai", "ChatVertexAI"): (
+    ("depreciated", "chat_models", "vertexai", "ChatVertexAI"): (
         "langchain_google_vertexai",
         "chat_models",
         "ChatVertexAI",
     ),
-    ("langchain", "schema", "output", "ChatGenerationChunk"): (
+    ("depreciated", "schema", "output", "ChatGenerationChunk"): (
         "sparkai",
         "core",
         "outputs",
         "chat_generation",
         "ChatGenerationChunk",
     ),
-    ("langchain", "schema", "messages", "ChatMessageChunk"): (
+    ("depreciated", "schema", "messages", "ChatMessageChunk"): (
         "sparkai",
         "core",
         "messages",
         "chat",
         "ChatMessageChunk",
     ),
-    ("langchain", "schema", "messages", "HumanMessageChunk"): (
+    ("depreciated", "schema", "messages", "HumanMessageChunk"): (
         "sparkai",
         "core",
         "messages",
         "human",
         "HumanMessageChunk",
     ),
-    ("langchain", "schema", "messages", "FunctionMessageChunk"): (
+    ("depreciated", "schema", "messages", "FunctionMessageChunk"): (
         "sparkai",
         "core",
         "messages",
         "function",
         "FunctionMessageChunk",
     ),
-    ("langchain", "schema", "messages", "SystemMessageChunk"): (
+    ("depreciated", "schema", "messages", "SystemMessageChunk"): (
         "sparkai",
         "core",
         "messages",
         "system",
         "SystemMessageChunk",
     ),
-    ("langchain", "schema", "messages", "ToolMessageChunk"): (
+    ("depreciated", "schema", "messages", "ToolMessageChunk"): (
         "sparkai",
         "core",
         "messages",
         "tool",
         "ToolMessageChunk",
     ),
-    ("langchain", "schema", "output", "GenerationChunk"): (
+    ("depreciated", "schema", "output", "GenerationChunk"): (
         "sparkai",
         "core",
         "outputs",
         "generation",
         "GenerationChunk",
     ),
-    ("langchain", "llms", "openai", "BaseOpenAI"): (
-        "langchain",
+    ("depreciated", "llms", "openai", "BaseOpenAI"): (
+        "depreciated",
         "llms",
         "openai",
         "BaseOpenAI",
     ),
-    ("langchain", "llms", "bedrock", "Bedrock"): (
-        "langchain",
+    ("depreciated", "llms", "bedrock", "Bedrock"): (
+        "depreciated",
         "llms",
         "bedrock",
         "Bedrock",
     ),
-    ("langchain", "llms", "fireworks", "Fireworks"): (
-        "langchain",
+    ("depreciated", "llms", "fireworks", "Fireworks"): (
+        "depreciated",
         "llms",
         "fireworks",
         "Fireworks",
     ),
-    ("langchain", "llms", "google_palm", "GooglePalm"): (
-        "langchain",
+    ("depreciated", "llms", "google_palm", "GooglePalm"): (
+        "depreciated",
         "llms",
         "google_palm",
         "GooglePalm",
     ),
-    ("langchain", "llms", "openai", "AzureOpenAI"): (
+    ("depreciated", "llms", "openai", "AzureOpenAI"): (
         "langchain_openai",
         "llms",
         "azure",
         "AzureOpenAI",
     ),
-    ("langchain", "llms", "replicate", "Replicate"): (
-        "langchain",
+    ("depreciated", "llms", "replicate", "Replicate"): (
+        "depreciated",
         "llms",
         "replicate",
         "Replicate",
     ),
-    ("langchain", "llms", "vertexai", "VertexAI"): (
+    ("depreciated", "llms", "vertexai", "VertexAI"): (
         "langchain_vertexai",
         "llms",
         "VertexAI",
     ),
-    ("langchain", "output_parsers", "combining", "CombiningOutputParser"): (
-        "langchain",
+    ("depreciated", "output_parsers", "combining", "CombiningOutputParser"): (
+        "depreciated",
         "output_parsers",
         "combining",
         "CombiningOutputParser",
     ),
-    ("langchain", "schema", "prompt_template", "BaseChatPromptTemplate"): (
+    ("depreciated", "schema", "prompt_template", "BaseChatPromptTemplate"): (
         "sparkai",
         "core",
         "prompts",
         "chat",
         "BaseChatPromptTemplate",
     ),
-    ("langchain", "prompts", "chat", "ChatMessagePromptTemplate"): (
+    ("depreciated", "prompts", "chat", "ChatMessagePromptTemplate"): (
         "sparkai",
         "core",
         "prompts",
         "chat",
         "ChatMessagePromptTemplate",
     ),
-    ("langchain", "prompts", "few_shot_with_templates", "FewShotPromptWithTemplates"): (
+    ("depreciated", "prompts", "few_shot_with_templates", "FewShotPromptWithTemplates"): (
         "sparkai",
         "core",
         "prompts",
         "few_shot_with_templates",
         "FewShotPromptWithTemplates",
     ),
-    ("langchain", "prompts", "pipeline", "PipelinePromptTemplate"): (
+    ("depreciated", "prompts", "pipeline", "PipelinePromptTemplate"): (
         "sparkai",
         "core",
         "prompts",
         "pipeline",
         "PipelinePromptTemplate",
     ),
-    ("langchain", "prompts", "base", "StringPromptTemplate"): (
+    ("depreciated", "prompts", "base", "StringPromptTemplate"): (
         "sparkai",
         "core",
         "prompts",
         "string",
         "StringPromptTemplate",
     ),
-    ("langchain", "prompts", "base", "StringPromptValue"): (
+    ("depreciated", "prompts", "base", "StringPromptValue"): (
         "sparkai",
         "core",
         "prompt_values",
         "StringPromptValue",
     ),
-    ("langchain", "prompts", "chat", "BaseStringMessagePromptTemplate"): (
+    ("depreciated", "prompts", "chat", "BaseStringMessagePromptTemplate"): (
         "sparkai",
         "core",
         "prompts",
         "chat",
         "BaseStringMessagePromptTemplate",
     ),
-    ("langchain", "prompts", "chat", "ChatPromptValue"): (
+    ("depreciated", "prompts", "chat", "ChatPromptValue"): (
         "sparkai",
         "core",
         "prompt_values",
         "ChatPromptValue",
     ),
-    ("langchain", "prompts", "chat", "ChatPromptValueConcrete"): (
+    ("depreciated", "prompts", "chat", "ChatPromptValueConcrete"): (
         "sparkai",
         "core",
         "prompt_values",
         "ChatPromptValueConcrete",
     ),
-    ("langchain", "schema", "runnable", "HubRunnable"): (
-        "langchain",
+    ("depreciated", "schema", "runnable", "HubRunnable"): (
+        "depreciated",
         "runnables",
         "hub",
         "HubRunnable",
     ),
-    ("langchain", "schema", "runnable", "RunnableBindingBase"): (
+    ("depreciated", "schema", "runnable", "RunnableBindingBase"): (
         "sparkai",
         "core",
         "runnables",
         "base",
         "RunnableBindingBase",
     ),
-    ("langchain", "schema", "runnable", "OpenAIFunctionsRouter"): (
-        "langchain",
+    ("depreciated", "schema", "runnable", "OpenAIFunctionsRouter"): (
+        "depreciated",
         "runnables",
         "openai_functions",
         "OpenAIFunctionsRouter",
     ),
-    ("langchain", "schema", "runnable", "RouterRunnable"): (
+    ("depreciated", "schema", "runnable", "RouterRunnable"): (
         "sparkai",
         "core",
         "runnables",
         "router",
         "RouterRunnable",
     ),
-    ("langchain", "schema", "runnable", "RunnablePassthrough"): (
+    ("depreciated", "schema", "runnable", "RunnablePassthrough"): (
         "sparkai",
         "core",
         "runnables",
         "passthrough",
         "RunnablePassthrough",
     ),
-    ("langchain", "schema", "runnable", "RunnableSequence"): (
+    ("depreciated", "schema", "runnable", "RunnableSequence"): (
         "sparkai",
         "core",
         "runnables",
         "base",
         "RunnableSequence",
     ),
-    ("langchain", "schema", "runnable", "RunnableEach"): (
+    ("depreciated", "schema", "runnable", "RunnableEach"): (
         "sparkai",
         "core",
         "runnables",
         "base",
         "RunnableEach",
     ),
-    ("langchain", "schema", "runnable", "RunnableEachBase"): (
+    ("depreciated", "schema", "runnable", "RunnableEachBase"): (
         "sparkai",
         "core",
         "runnables",
         "base",
         "RunnableEachBase",
     ),
-    ("langchain", "schema", "runnable", "RunnableConfigurableAlternatives"): (
+    ("depreciated", "schema", "runnable", "RunnableConfigurableAlternatives"): (
         "sparkai",
         "core",
         "runnables",
         "configurable",
         "RunnableConfigurableAlternatives",
     ),
-    ("langchain", "schema", "runnable", "RunnableConfigurableFields"): (
+    ("depreciated", "schema", "runnable", "RunnableConfigurableFields"): (
         "sparkai",
         "core",
         "runnables",
         "configurable",
         "RunnableConfigurableFields",
     ),
-    ("langchain", "schema", "runnable", "RunnableWithMessageHistory"): (
+    ("depreciated", "schema", "runnable", "RunnableWithMessageHistory"): (
         "sparkai",
         "core",
         "runnables",
         "history",
         "RunnableWithMessageHistory",
     ),
-    ("langchain", "schema", "runnable", "RunnableAssign"): (
+    ("depreciated", "schema", "runnable", "RunnableAssign"): (
         "sparkai",
         "core",
         "runnables",
         "passthrough",
         "RunnableAssign",
     ),
-    ("langchain", "schema", "runnable", "RunnableRetry"): (
+    ("depreciated", "schema", "runnable", "RunnableRetry"): (
         "sparkai",
         "core",
         "runnables",
@@ -541,35 +541,35 @@ SERIALIZABLE_MAPPING: Dict[Tuple[str, ...], Tuple[str, ...]] = {
 # Needed for backwards compatibility for old versions of LangChain where things
 # Were in different place
 _OG_SERIALIZABLE_MAPPING: Dict[Tuple[str, ...], Tuple[str, ...]] = {
-    ("langchain", "schema", "AIMessage"): (
+    ("depreciated", "schema", "AIMessage"): (
         "sparkai",
         "core",
         "messages",
         "ai",
         "AIMessage",
     ),
-    ("langchain", "schema", "ChatMessage"): (
+    ("depreciated", "schema", "ChatMessage"): (
         "sparkai",
         "core",
         "messages",
         "chat",
         "ChatMessage",
     ),
-    ("langchain", "schema", "FunctionMessage"): (
+    ("depreciated", "schema", "FunctionMessage"): (
         "sparkai",
         "core",
         "messages",
         "function",
         "FunctionMessage",
     ),
-    ("langchain", "schema", "HumanMessage"): (
+    ("depreciated", "schema", "HumanMessage"): (
         "sparkai",
         "core",
         "messages",
         "human",
         "HumanMessage",
     ),
-    ("langchain", "schema", "SystemMessage"): (
+    ("depreciated", "schema", "SystemMessage"): (
         "sparkai",
         "core",
         "messages",

@@ -30,8 +30,8 @@ class PipelinePromptTemplate(BasePromptTemplate):
 
     @classmethod
     def get_lc_namespace(cls) -> List[str]:
-        """Get the namespace of the langchain object."""
-        return ["langchain", "prompts", "pipeline"]
+        """Get the namespace of the depreciated object."""
+        return ["depreciated", "prompts", "pipeline"]
 
     @root_validator(pre=True)
     def get_input_variables(cls, values: Dict) -> Dict:

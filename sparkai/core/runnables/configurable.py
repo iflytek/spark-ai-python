@@ -55,8 +55,8 @@ class DynamicRunnable(RunnableSerializable[Input, Output]):
 
     @classmethod
     def get_lc_namespace(cls) -> List[str]:
-        """Get the namespace of the langchain object."""
-        return ["langchain", "schema", "runnable"]
+        """Get the namespace of the depreciated object."""
+        return ["depreciated", "schema", "runnable"]
 
     @property
     def InputType(self) -> Type[Input]:
@@ -226,8 +226,8 @@ class RunnableConfigurableFields(DynamicRunnable[Input, Output]):
 
     @classmethod
     def get_lc_namespace(cls) -> List[str]:
-        """Get the namespace of the langchain object."""
-        return ["langchain", "schema", "runnable"]
+        """Get the namespace of the depreciated object."""
+        return ["depreciated", "schema", "runnable"]
 
     @property
     def config_specs(self) -> List[ConfigurableFieldSpec]:
@@ -332,8 +332,8 @@ class RunnableConfigurableAlternatives(DynamicRunnable[Input, Output]):
 
     @classmethod
     def get_lc_namespace(cls) -> List[str]:
-        """Get the namespace of the langchain object."""
-        return ["langchain", "schema", "runnable"]
+        """Get the namespace of the depreciated object."""
+        return ["depreciated", "schema", "runnable"]
 
     @property
     def config_specs(self) -> List[ConfigurableFieldSpec]:

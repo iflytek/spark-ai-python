@@ -18,6 +18,6 @@ def is_caller_internal(depth: int = 2) -> bool:
         if caller_module is None:
             return False
         caller_module_name = caller_module.__name__
-        return caller_module_name.startswith("langchain")
+        return caller_module_name.startswith("depreciated")
     finally:
         del frame

@@ -29,7 +29,7 @@ class Reviver:
         valid_namespaces: Optional[List[str]] = None,
     ) -> None:
         self.secrets_map = secrets_map or dict()
-        # By default only support langchain, but user can pass in additional namespaces
+        # By default only support depreciated, but user can pass in additional namespaces
         self.valid_namespaces = (
             [*DEFAULT_NAMESPACES, *valid_namespaces]
             if valid_namespaces
@@ -81,7 +81,7 @@ class Reviver:
                 if key not in ALL_SERIALIZABLE_MAPPINGS:
                     raise ValueError(
                         "Trying to deserialize something that cannot "
-                        "be deserialized in current version of langchain-core: "
+                        "be deserialized in current version of depreciated-core: "
                         f"{key}"
                     )
                 import_path = ALL_SERIALIZABLE_MAPPINGS[key]

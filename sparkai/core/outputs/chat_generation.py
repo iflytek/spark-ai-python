@@ -30,8 +30,8 @@ class ChatGeneration(Generation):
 
     @classmethod
     def get_lc_namespace(cls) -> List[str]:
-        """Get the namespace of the langchain object."""
-        return ["langchain", "schema", "output"]
+        """Get the namespace of the depreciated object."""
+        return ["depreciated", "schema", "output"]
 
 
 class ChatGenerationChunk(ChatGeneration):
@@ -49,8 +49,8 @@ class ChatGenerationChunk(ChatGeneration):
 
     @classmethod
     def get_lc_namespace(cls) -> List[str]:
-        """Get the namespace of the langchain object."""
-        return ["langchain", "schema", "output"]
+        """Get the namespace of the depreciated object."""
+        return ["depreciated", "schema", "output"]
 
     def __add__(self, other: ChatGenerationChunk) -> ChatGenerationChunk:
         if isinstance(other, ChatGenerationChunk):

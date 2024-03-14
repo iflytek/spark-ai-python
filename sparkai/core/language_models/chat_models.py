@@ -58,7 +58,7 @@ def _get_verbosity() -> bool:
     return get_verbose()
 
 
-def generate_from_stream(stream: Iterator[ChatGenerationChunk]) -> ChatResult:
+def generate_from_stream(stream: Iterator[ChatGenerationChunk], llm_output) -> ChatResult:
     """Generate from a stream."""
 
     generation: Optional[ChatGenerationChunk] = None
@@ -74,7 +74,8 @@ def generate_from_stream(stream: Iterator[ChatGenerationChunk]) -> ChatResult:
                 message=message_chunk_to_message(generation.message),
                 generation_info=generation.generation_info,
             )
-        ]
+        ],
+        llm_output=llm_output
     )
 
 
@@ -314,7 +315,10 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
     # --- Custom methods ---
 
     def _combine_llm_outputs(self, llm_outputs: List[Optional[dict]]) -> dict:
-        return {}
+        if llm_outputs:
+            return llm_outputs[0]
+        else:
+            return {}
 
     def _get_invocation_params(
         self,
@@ -568,10 +572,10 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
         disregard_cache = self.cache is not None and not self.cache
         llm_cache = get_llm_cache()
         if llm_cache is None or disregard_cache:
-            # This happens when langchain.cache is None, but self.cache is True
+            # This happens when depreciated.cache is None, but self.cache is True
             if self.cache is not None and self.cache:
                 raise ValueError(
-                    "Asked to cache, but no cache found at `langchain.cache`."
+                    "Asked to cache, but no cache found at `depreciated.cache`."
                 )
             if new_arg_supported:
                 return self._generate(
@@ -608,10 +612,10 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
         disregard_cache = self.cache is not None and not self.cache
         llm_cache = get_llm_cache()
         if llm_cache is None or disregard_cache:
-            # This happens when langchain.cache is None, but self.cache is True
+            # This happens when depreciated.cache is None, but self.cache is True
             if self.cache is not None and self.cache:
                 raise ValueError(
-                    "Asked to cache, but no cache found at `langchain.cache`."
+                    "Asked to cache, but no cache found at `depreciated.cache`."
                 )
             if new_arg_supported:
                 return await self._agenerate(

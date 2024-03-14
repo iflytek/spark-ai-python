@@ -58,10 +58,10 @@ class Serializable(BaseModel, ABC):
 
     @classmethod
     def get_lc_namespace(cls) -> List[str]:
-        """Get the namespace of the langchain object.
+        """Get the namespace of the depreciated object.
 
-        For example, if the class is `langchain.llms.openai.OpenAI`, then the
-        namespace is ["langchain", "llms", "openai"]
+        For example, if the class is `depreciated.llms.openai.OpenAI`, then the
+        namespace is ["depreciated", "llms", "openai"]
         """
         return cls.__module__.split(".")
 

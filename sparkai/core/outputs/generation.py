@@ -27,8 +27,8 @@ class Generation(Serializable):
 
     @classmethod
     def get_lc_namespace(cls) -> List[str]:
-        """Get the namespace of the langchain object."""
-        return ["langchain", "schema", "output"]
+        """Get the namespace of the depreciated object."""
+        return ["depreciated", "schema", "output"]
 
 
 class GenerationChunk(Generation):
@@ -36,8 +36,8 @@ class GenerationChunk(Generation):
 
     @classmethod
     def get_lc_namespace(cls) -> List[str]:
-        """Get the namespace of the langchain object."""
-        return ["langchain", "schema", "output"]
+        """Get the namespace of the depreciated object."""
+        return ["depreciated", "schema", "output"]
 
     def __add__(self, other: GenerationChunk) -> GenerationChunk:
         if isinstance(other, GenerationChunk):

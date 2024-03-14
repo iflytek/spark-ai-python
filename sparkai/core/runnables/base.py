@@ -1875,8 +1875,8 @@ class RunnableSequence(RunnableSerializable[Input, Output]):
 
     @classmethod
     def get_lc_namespace(cls) -> List[str]:
-        """Get the namespace of the langchain object."""
-        return ["langchain", "schema", "runnable"]
+        """Get the namespace of the depreciated object."""
+        return ["depreciated", "schema", "runnable"]
 
     @property
     def steps(self) -> List[Runnable[Any, Any]]:
@@ -2562,8 +2562,8 @@ class RunnableParallel(RunnableSerializable[Input, Dict[str, Any]]):
 
     @classmethod
     def get_lc_namespace(cls) -> List[str]:
-        """Get the namespace of the langchain object."""
-        return ["langchain", "schema", "runnable"]
+        """Get the namespace of the depreciated object."""
+        return ["depreciated", "schema", "runnable"]
 
     class Config:
         arbitrary_types_allowed = True
@@ -2933,7 +2933,7 @@ class RunnableGenerator(Runnable[Input, Output]):
             from sparkai.core.prompts import ChatPromptTemplate
             from sparkai.core.runnables import RunnableGenerator, RunnableLambda
             from langchain_openai import ChatOpenAI
-            from langchain.schema import StrOutputParser
+            from depreciated.schema import StrOutputParser
 
 
             model = ChatOpenAI()
@@ -3788,8 +3788,8 @@ class RunnableEachBase(RunnableSerializable[List[Input], List[Output]]):
 
     @classmethod
     def get_lc_namespace(cls) -> List[str]:
-        """Get the namespace of the langchain object."""
-        return ["langchain", "schema", "runnable"]
+        """Get the namespace of the depreciated object."""
+        return ["depreciated", "schema", "runnable"]
 
     def _invoke(
         self,
@@ -3844,8 +3844,8 @@ class RunnableEach(RunnableEachBase[Input, Output]):
 
     @classmethod
     def get_lc_namespace(cls) -> List[str]:
-        """Get the namespace of the langchain object."""
-        return ["langchain", "schema", "runnable"]
+        """Get the namespace of the depreciated object."""
+        return ["depreciated", "schema", "runnable"]
 
     def get_name(
         self, suffix: Optional[str] = None, *, name: Optional[str] = None
@@ -4025,8 +4025,8 @@ class RunnableBindingBase(RunnableSerializable[Input, Output]):
 
     @classmethod
     def get_lc_namespace(cls) -> List[str]:
-        """Get the namespace of the langchain object."""
-        return ["langchain", "schema", "runnable"]
+        """Get the namespace of the depreciated object."""
+        return ["depreciated", "schema", "runnable"]
 
     def _merge_configs(self, *configs: Optional[RunnableConfig]) -> RunnableConfig:
         config = merge_configs(self.config, *configs)
@@ -4215,8 +4215,8 @@ class RunnableBinding(RunnableBindingBase[Input, Output]):
 
     @classmethod
     def get_lc_namespace(cls) -> List[str]:
-        """Get the namespace of the langchain object."""
-        return ["langchain", "schema", "runnable"]
+        """Get the namespace of the depreciated object."""
+        return ["depreciated", "schema", "runnable"]
 
     def bind(self, **kwargs: Any) -> Runnable[Input, Output]:
         """Bind additional kwargs to a Runnable, returning a new Runnable.

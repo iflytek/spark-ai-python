@@ -56,8 +56,8 @@ class PromptTemplate(StringPromptTemplate):
 
     @classmethod
     def get_lc_namespace(cls) -> List[str]:
-        """Get the namespace of the langchain object."""
-        return ["langchain", "prompts", "prompt"]
+        """Get the namespace of the depreciated object."""
+        return ["depreciated", "prompts", "prompt"]
 
     input_variables: List[str]
     """A list of the names of the variables the prompt template expects."""

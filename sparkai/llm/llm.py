@@ -219,7 +219,10 @@ class ChatSparkLLM(BaseChatModel):
             self.model_kwargs,
             self.streaming,
         )
+        llm_output = kwargs.get("llm_output")
         for content in self.client.subscribe(timeout=self.request_timeout):
+            if "usage" in content:
+                llm_output["token_usage"] = content["usage"]
             if "data" not in content:
                 continue
             delta = content["data"]
@@ -235,11 +238,16 @@ class ChatSparkLLM(BaseChatModel):
         run_manager: Optional[CallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> ChatResult:
+        llm_output = {}
+        if "llm_output" in kwargs:
+            llm_output = kwargs.get("llm_output")
+        else:
+            kwargs["llm_output"] = llm_output
         if self.streaming:
             stream_iter = self._stream(
                 messages=messages, stop=stop, run_manager=run_manager, **kwargs
             )
-            return generate_from_stream(stream_iter)
+            return generate_from_stream(stream_iter, llm_output)
 
         self.client.arun(
             [_convert_message_to_dict(m) for m in messages],
@@ -248,7 +256,6 @@ class ChatSparkLLM(BaseChatModel):
             False,
         )
         completion = {}
-        llm_output = {}
         for content in self.client.subscribe(timeout=self.request_timeout):
             if "usage" in content:
                 llm_output["token_usage"] = content["usage"]

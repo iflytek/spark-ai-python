@@ -135,8 +135,8 @@ class RunnableWithFallbacks(RunnableSerializable[Input, Output]):
 
     @classmethod
     def get_lc_namespace(cls) -> List[str]:
-        """Get the namespace of the langchain object."""
-        return ["langchain", "schema", "runnable"]
+        """Get the namespace of the depreciated object."""
+        return ["depreciated", "schema", "runnable"]
 
     @property
     def runnables(self) -> Iterator[Runnable[Input, Output]]:
