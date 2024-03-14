@@ -205,10 +205,12 @@ INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8008 (Press CTRL+C to quit)
 
-
-
 ```
 
+随后在需要配置 
+
+* open_api_key的地方 配置格式key为: ```key&secret&appid"``` 格式的key
+* openai_base_url: 你本地 ip:8008端口
 
 ## 欢迎贡献
 
