@@ -26,7 +26,6 @@ from typing import (
 )
 from uuid import UUID
 
-from langsmith.run_helpers import get_run_tree_context
 from tenacity import RetryCallState
 
 from sparkai.core.callbacks.base import (
@@ -1696,7 +1695,7 @@ def _configure(
         tracing_v2_callback_var,
     )
 
-    run_tree = get_run_tree_context()
+    run_tree = None
     parent_run_id = None if run_tree is None else getattr(run_tree, "id")
     callback_manager = callback_manager_cls(handlers=[], parent_run_id=parent_run_id)
     if inheritable_callbacks or local_callbacks:
