@@ -29,6 +29,9 @@ from sparkai.core.messages import (
     HumanMessage,
     HumanMessageChunk,
     SystemMessage,
+    FunctionCallMessage,
+    FunctionMessageChunk,
+    FunctionCallMessageChunk
 )
 from sparkai.core.outputs import (
     ChatGeneration,
@@ -62,6 +65,8 @@ def _convert_message_to_dict(message: BaseMessage) -> dict:
 def _convert_dict_to_message(_dict: Mapping[str, Any]) -> BaseMessage:
     msg_role = _dict["role"]
     msg_content = _dict["content"]
+    if "function_call" in _dict:
+        msg_role = "function_call"
     if msg_role == "user":
         return HumanMessage(content=msg_content)
     elif msg_role == "assistant":
@@ -69,19 +74,27 @@ def _convert_dict_to_message(_dict: Mapping[str, Any]) -> BaseMessage:
         return AIMessage(content=content)
     elif msg_role == "system":
         return SystemMessage(content=msg_content)
+    elif msg_role == "function_call" or "function_call" in _dict:
+        return FunctionCallMessage( content=msg_content, function_call=_dict["function_call"])
     else:
         return ChatMessage(content=msg_content, role=msg_role)
 
 
 def _convert_delta_to_message_chunk(
-    _dict: Mapping[str, Any], default_class: Type[BaseMessageChunk]
+        _dict: Mapping[str, Any], default_class: Type[BaseMessageChunk]
 ) -> BaseMessageChunk:
     msg_role = _dict["role"]
     msg_content = _dict.get("content", "")
+    if "function_call" in _dict:
+        msg_role = "function_call"
+        default_class = FunctionCallMessageChunk
+
     if msg_role == "user" or default_class == HumanMessageChunk:
         return HumanMessageChunk(content=msg_content)
-    elif msg_role == "assistant" or default_class == AIMessageChunk:
+    elif msg_role == "assistant" or default_class == AIMessageChunk or default_class == FunctionMessageChunk:
         return AIMessageChunk(content=msg_content)
+    elif msg_role == "function_call" or "function_call" in _dict:
+        return FunctionCallMessageChunk( content=msg_content, function_call=_dict["function_call"])
     elif msg_role or default_class == ChatMessageChunk:
         return ChatMessageChunk(content=msg_content, role=msg_role)
     else:
@@ -182,7 +195,7 @@ class ChatSparkLLM(BaseChatModel):
             values,
             "spark_app_url",
             "IFLYTEK_SPARK_APP_URL",
-            "wss://spark-api.xf-yun.com/v3.1/chat",
+            "wss://spark-api.xf-yun.com/v3.5/chat",
         )
         values["spark_llm_domain"] = get_from_dict_or_env(
             values,
@@ -205,19 +218,23 @@ class ChatSparkLLM(BaseChatModel):
         return values
 
     def _stream(
-        self,
-        messages: List[BaseMessage],
-        stop: Optional[List[str]] = None,
-        run_manager: Optional[CallbackManagerForLLMRun] = None,
-        **kwargs: Any,
+            self,
+            messages: List[BaseMessage],
+            stop: Optional[List[str]] = None,
+            run_manager: Optional[CallbackManagerForLLMRun] = None,
+            **kwargs: Any,
     ) -> Iterator[ChatGenerationChunk]:
         default_chunk_class = AIMessageChunk
+        function_definition = []
+        if "function_definition" in kwargs:
+            function_definition = kwargs['function_definition']
 
         self.client.arun(
             [_convert_message_to_dict(m) for m in messages],
             self.spark_user_id,
             self.model_kwargs,
             self.streaming,
+            function_definition
         )
         llm_output = kwargs.get("llm_output")
         for content in self.client.subscribe(timeout=self.request_timeout):
@@ -232,28 +249,34 @@ class ChatSparkLLM(BaseChatModel):
                 run_manager.on_llm_new_token(str(chunk.content))
 
     def _generate(
-        self,
-        messages: List[BaseMessage],
-        stop: Optional[List[str]] = None,
-        run_manager: Optional[CallbackManagerForLLMRun] = None,
-        **kwargs: Any,
+            self,
+            messages: List[BaseMessage],
+            stop: Optional[List[str]] = None,
+            run_manager: Optional[CallbackManagerForLLMRun] = None,
+            **kwargs: Any,
     ) -> ChatResult:
         llm_output = {}
         if "llm_output" in kwargs:
             llm_output = kwargs.get("llm_output")
         else:
             kwargs["llm_output"] = llm_output
+        function_definition = []
+        if "function_definition" in kwargs:
+            function_definition = kwargs['function_definition']
+
         if self.streaming:
             stream_iter = self._stream(
                 messages=messages, stop=stop, run_manager=run_manager, **kwargs
             )
             return generate_from_stream(stream_iter, llm_output)
 
+
         self.client.arun(
             [_convert_message_to_dict(m) for m in messages],
             self.spark_user_id,
             self.model_kwargs,
             False,
+            function_definition
         )
         completion = {}
         for content in self.client.subscribe(timeout=self.request_timeout):
@@ -278,13 +301,13 @@ class _SparkLLMClient:
     """
 
     def __init__(
-        self,
-        app_id: str,
-        api_key: str,
-        api_secret: str,
-        api_url: Optional[str] = None,
-        spark_domain: Optional[str] = None,
-        model_kwargs: Optional[dict] = None,
+            self,
+            app_id: str,
+            api_key: str,
+            api_secret: str,
+            api_url: Optional[str] = None,
+            spark_domain: Optional[str] = None,
+            model_kwargs: Optional[dict] = None,
     ):
         try:
             import websocket
@@ -356,11 +379,12 @@ class _SparkLLMClient:
         return url
 
     def run(
-        self,
-        messages: List[Dict],
-        user_id: str,
-        model_kwargs: Optional[dict] = None,
-        streaming: bool = False,
+            self,
+            messages: List[Dict],
+            user_id: str,
+            model_kwargs: Optional[dict] = None,
+            streaming: bool = False,
+            function_definition: List[Dict] = []
     ) -> None:
         self.websocket_client.enableTrace(False)
         ws = self.websocket_client.WebSocketApp(
@@ -370,6 +394,7 @@ class _SparkLLMClient:
             on_close=self.on_close,
             on_open=self.on_open,
         )
+        ws.function_definition = function_definition
         ws.messages = messages
         ws.user_id = user_id
         ws.model_kwargs = self.model_kwargs if model_kwargs is None else model_kwargs
@@ -377,11 +402,12 @@ class _SparkLLMClient:
         ws.run_forever()
 
     def arun(
-        self,
-        messages: List[Dict],
-        user_id: str,
-        model_kwargs: Optional[dict] = None,
-        streaming: bool = False,
+            self,
+            messages: List[Dict],
+            user_id: str,
+            model_kwargs: Optional[dict] = None,
+            streaming: bool = False,
+            function_definition: List[Dict] = [],
     ) -> threading.Thread:
         ws_thread = threading.Thread(
             target=self.run,
@@ -390,6 +416,7 @@ class _SparkLLMClient:
                 user_id,
                 model_kwargs,
                 streaming,
+                function_definition,
             ),
         )
         ws_thread.start()
@@ -414,7 +441,8 @@ class _SparkLLMClient:
         self.blocking_message = {"content": "", "role": "assistant"}
         data = json.dumps(
             self.gen_params(
-                messages=ws.messages, user_id=ws.user_id, model_kwargs=ws.model_kwargs
+                messages=ws.messages, user_id=ws.user_id, model_kwargs=ws.model_kwargs,
+                function_definition=ws.function_definition
             )
         )
         ws.send(data)
@@ -431,10 +459,15 @@ class _SparkLLMClient:
             choices = data["payload"]["choices"]
             status = choices["status"]
             content = choices["text"][0]["content"]
+            function_call = choices['text'][0].get("function_call", "")
             if ws.streaming:
                 self.queue.put({"data": choices["text"][0]})
             else:
                 self.blocking_message["content"] += content
+
+            if function_call:
+                self.blocking_message["function_call"] = function_call
+
             if status == 2:
                 if not ws.streaming:
                     self.queue.put({"data": self.blocking_message})
@@ -447,16 +480,20 @@ class _SparkLLMClient:
                 ws.close()
 
     def gen_params(
-        self, messages: list, user_id: str, model_kwargs: Optional[dict] = None
+            self, messages: list, user_id: str, model_kwargs: Optional[dict] = None, function_definition: list = []
     ) -> dict:
         data: Dict = {
             "header": {"app_id": self.app_id, "uid": user_id},
             "parameter": {"chat": {"domain": self.spark_domain}},
             "payload": {"message": {"text": messages}},
         }
+        if len(function_definition) > 0:
+            data["payload"]["functions"] = {}
+            data["payload"]["functions"]["text"] = function_definition
 
         if model_kwargs:
             data["parameter"]["chat"].update(model_kwargs)
+
         logger.debug(f"Spark Request Parameters: {data}")
         return data
 
@@ -487,10 +524,8 @@ class ChunkPrintHandler(BaseCallbackHandler):
         """Initialize callback handler."""
         self.color = color
 
-    def on_llm_new_token(self,  token: str,
-        *,
-        chunk:  None,
-        **kwargs: Any,):
+    def on_llm_new_token(self, token: str,
+                         *,
+                         chunk: None,
+                         **kwargs: Any, ):
         print(token)
-
-

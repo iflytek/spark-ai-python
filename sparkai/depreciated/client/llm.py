@@ -38,7 +38,7 @@ import requests
 
 from sparkai.core.callbacks.manager import CallbackManagerForLLMRun
 from sparkai.llms.base import LLM
-from langchain.llms.utils import enforce_stop_tokens
+from .llms.utils import enforce_stop_tokens
 
 from sparkai.api_resources.chat_completion import *
 

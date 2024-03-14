@@ -276,7 +276,7 @@ def convert_to_openai_function(
         A dict version of the passed in function which is compatible with the
             OpenAI function-calling API.
     """
-    from sparkai.core.tools import BaseTool
+    from langchain_core.tools import BaseTool
 
     if isinstance(function, dict):
         return function

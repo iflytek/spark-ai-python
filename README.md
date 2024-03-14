@@ -1,19 +1,15 @@
-# 讯飞星火大模型接入库 (opensource)
+# 讯飞星火大模型接入库 (spark-ai-python)
 
-本Python SDK库帮助用户更快体验讯飞星火大模型 [项目正在开发中]
+本Python SDK库帮助用户更快体验讯飞星火大模型
 
-## 特性
-
-- [x] 极简的接入,快速调用讯飞星火大模型
-- [ ] 发布pypi
-- [x] 移植Langchain Memory实现，简单几行代码实现chat功能
-- [x] Memory支持: `in_memory`, `file`, `postgres`, `redis`
-- [ ] WS断线自动重连
+目前基于Langchain的一些基础数据类型移植开发得到本项目，感谢社区 [项目正在开发中]
 
 ## 近期规划新特性[待演进]
 
+- [x] 极简的接入,快速调用讯飞星火大模型
+- [x] 已发布pypi [国内源均可安装]
 - [ ] 支持 HTTP SPARK API
-- [ ] 本地代理方式星火SparkAPI转OpenAI接口
+- [x] 本地代理方式星火SparkAPI转OpenAI接口
 - [ ] SDK方式适配OpenAI接口 ChatCompletion接口 
 - [ ] SDK方式适配OpenAI Embedding接口
 - [ ] 集成星火开源框架 Doc Examples , AutoGPT/AutoGen/MetaGpt/Langchain/PromptFlow/.... 等
@@ -25,6 +21,10 @@
 ```sh
 pip install --upgrade spark_ai_sdk
 ```
+国内使用:
+```bash
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple spark_ai_sdk
+```
 
 Install from source with:
 
@@ -34,7 +34,7 @@ python setup.py install
 
 ## 如何使用
 
-## 示例代码
+### 示例代码
 
 * 前置条件
   需要在 xfyun.cn 申请有权限的
@@ -42,131 +42,171 @@ python setup.py install
   * api_key
   * api_secret
 
-* 备注: 推荐使用   [WS短连接方式 ](#WS短连接方式 )
+* 运行测试脚本需要提前将 `.env.example` 拷贝为 `.env`并配置其中变量
 
-## WS短连接方式 
+### 一次性返回结果(非流式)
 
-**(推荐使用该方式使用)**
+tests/examples/llm_test.py
 
 ```python
+import os
 
+from sparkai.llm.llm import ChatSparkLLM, ChunkPrintHandler
+from sparkai.core.messages import ChatMessage
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    raise RuntimeError('Python environment for SPARK AI is not completely set up: required package "python-dotenv" is missing.') from None
 
-from sparkai.api_resources import *
-from sparkai.api_resources.chat_completion import *
-from sparkai.schema import ChatMessage
-from sparkai.models.chat import ChatBody, ChatResponse
+load_dotenv()
 
 if __name__ == '__main__':
-    c = SparkOnceWebsocket(api_key=api_key, api_secret=api_secret, app_id=app_id, api_base=api_base)
-    messages = [
-        {'role': 'user', 'content': '请帮我完成目标:\n\n帮我生成一个 2到2000的随机数\n\n'}, {'role': 'assistant',
-                                                                           'content': '{\n\n"thoughts": {\n\n"text": "Generate a random number between 2 and 2000.",\n\n"reasoning": "To complete this task, I will need to access the internet for information gathering.",\n\n"plan": "I will use the random_number command with the min and max arguments set to 2 and 2000, respectively.",\n\n"criticism": "",\n\n"speak": "The random number generated is: 1587."\n\n},\n\n"command": {\n\n"name": "random_number",\n\n"args": {\n\n"min": "2",\n\n"max": "2000"\n\n}\n\n}\n\n}'},
-        {'role': 'user', 'content': '\n请帮我完成目标:\n\n帮我把这个随机数 发给 ybyang7@iflytek.com 并告诉他这个随机数很重要\n\n'}]
+    from sparkai.core.callbacks import StdOutCallbackHandler
+    messages = [{'role': 'user',
+                 'content': '你好呀'}]
 
-    c.send_messages(messages)
+    spark = ChatSparkLLM(
+        spark_api_url=os.environ["SPARKAI_URL"],
+        spark_app_id=os.environ["SPARKAI_APP_ID"],
+        spark_api_key=os.environ["SPARKAI_API_KEY"],
+        spark_api_secret=os.environ["SPARKAI_API_SECRET"],
+        spark_llm_domain=os.environ["SPARKAI_DOMAIN"],
+        streaming=False,
+    )
+    messages = [ChatMessage(
+        role="user",
+        content=messages[0]['content']
 
-
+    )]
+    handler = ChunkPrintHandler()
+    a = spark.generate([messages], callbacks=[handler])
+    print(a)
 ```
+注意当streaming设置为 False是, callbacks 并不起作用。
 
+### 流式返回结果
 
-### 交互式(建议Demo使用)
+tests/examples/llm_test.py
 
 ```python
-import logging
-
-logging.basicConfig(level=logging.WARNING)
-
 import os
-from threading import Event
-from sparkai.socket_mode.websocket_client import SparkAISocketModeClient
-from sparkai.memory import ChatMessageHistory
 
-if __name__ == "__main__":
-    client = SparkAISocketModeClient(
-        app_id=os.environ.get("APP_ID"),
-        api_key=os.environ.get("API_KEY"),
-        api_secret=os.environ.get("API_SECRET"),
-        chat_interactive=True,
-        trace_enabled=False,
-        conversation_memory=ChatMessageHistory()
+from sparkai.llm.llm import ChatSparkLLM, ChunkPrintHandler
+from sparkai.core.messages import ChatMessage
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    raise RuntimeError('Python environment for SPARK AI is not completely set up: required package "python-dotenv" is missing.') from None
+
+load_dotenv()
+def test_stream():
+    from sparkai.core.callbacks import StdOutCallbackHandler
+    messages = [{'role': 'user',
+                 'content': '作为AutoSpark的创建者角色，当前需要你帮我分析并生成任务，你当前主要目标是:\n1. 帮我写个贪吃蛇python游戏\n\n\n\n\n当前执行任务节点是: `编写贪吃蛇游戏的界面设计`\n\n任务执行历史是:\n`\nTask: 使用ThinkingTool分析贪吃蛇游戏的需求\nResult: Error2: {\'error\': \'Could not parse invalid format: 根据任务节点，我将使用ThinkingTool来分析贪吃蛇游戏的需求。首先，我们需要理解游戏的基本功能和规则。贪吃蛇游戏的主要目标是控制一条蛇在屏幕上移动，吃到食物后蛇会变长，碰到自己的身体或者屏幕边缘则游戏结束。\\n\\n接下来，我们可以使用CodingTool来编写贪吃蛇游戏的代码。首先，我们需要定义以下核心类和方法：\\n\\n1. Snake类：用于表示贪吃蛇的状态，包括蛇的身体、移动方向等。\\n2. Food类：用于表示食物的位置。\\n3. Game类：用于控制游戏的进行，包括初始化游戏、更新蛇的位置、检查碰撞等。\\n4. main函数：用于启动游戏。\\n\\n接下来，我们将这些类和方法的代码写入文件中。\\n\\n最后，我们可以使用WriteTestTool来编写测试用例，确保我们的代码能够正确地运行。测试用例应该包括以下内容：\\n\\n1. 测试游戏是否能正确初始化。\\n2. 测试蛇是否能正确移动。\\n3. 测试蛇是否能正确吃到食物并变长。\\n4. 测试蛇是否能正确碰到自己的身体或屏幕边缘导致游戏结束。 exceptionNot get command from llm response...\'}. \nTask: 编写贪吃蛇游戏的spec文件\nResult: Error2: {\'error\': \'Could not parse invalid format: 根据任务节点，我将使用`WriteSpecTool`来编写贪吃蛇游戏的spec文件。\\n\\n首先，我们需要定义以下核心类和方法：\\n1. Snake类：用于表示贪吃蛇的状态，包括蛇的身体、移动方向等。\\n2. Food类：用于表示食物的位置。\\n3. Game类：用于控制游戏的进行，包括初始化游戏、更新蛇的位置、检查碰撞等。\\n4. main函数：用于启动游戏。\\n\\n接下来，我们将这些类和方法的代码写入文件中。\\n\\n最后，我们可以使用`WriteTestTool`来编写测试用例，确保我们的代码能够正确地运行。测试用例应该包括以下内容：\\n1. 测试游戏是否能正确初始化。\\n2. 测试蛇是否能正确移动。\\n3. 测试蛇是否能正确吃到食物并变长。\\n4. 测试蛇是否能正确碰到自己的身体或屏幕边缘导致游戏结束。 exceptionNot get command from llm response...\'}. \n\n`\n\n根据上述背景信息，你的任务是需要理解当前的任务节点关键信息，创建一个规划，解释为什么要这么做，并且提及一些需要注意的事项，必须从下述TOOLS中挑选一个命令用于下一步执行。\n\nTOOLS:\n1. "ThinkingTool": Intelligent problem-solving assistant that comprehends tasks, identifies key variables, and makes efficient decisions, all while providing detailed, self-driven reasoning for its choices. Do not assume anything, take the details from given data only., args : task_description: "<task_description>",\n2. "WriteSpecTool": A tool to write the spec of a program., args : task_description: "<task_description>",spec_file_name: "<spec_file_name>",\n3. "CodingTool": You will get instructions for code to write. You will write a very long answer. Make sure that every detail of the architecture is, in the end, implemented as code. Think step by step and reason yourself to the right decisions to make sure we get it right. You will first lay out the names of the core classes, functions, methods that will be necessary, as well as a quick comment on their purpose. Then you will output the content of each file including ALL code., args : code_description: "<code_description>",\n4. "WriteTestTool": 您是一位超级聪明的开发人员，使用测试驱动开发根据规范编写测试。\n请根据上述规范生成测试。测试应该尽可能简单， 但仍然涵盖了所有功能。\n将它们写入文件中, args : test_description: "<test_description>",test_file_name: "<test_file_name>",\n\n\n\n约束条件:\n1. 请注意返回的命令名称和参数不要被引号包裹\n2. 命令名称必须是TOOLS中的已知的\n3. 你只能生成一个待执行命令名称及其对应参数\n4. 你生成的命令必须是用来解决 `编写贪吃蛇游戏的界面设计`\n\n在之后的每次回答中，你必须严格遵从上述约束条件并按照如下JsonSchema约束返回响应:\n\n{\n "$schema": "http://json-schema.org/draft-07/schema#",\n "type": "object",\n "properties": {\n "thoughts": {\n "type": "object",\n "properties": {\n "reasoning": {\n "type": "string",\n "description": "short reasoning",\n }\n },\n "required": ["reasoning"]\n },\n "tool": {\n "type": "object",\n "properties": {\n "name": {\n "type": "string",\n "description": "tool name",\n },\n "args": {\n "type": "object",\n "description": "tool arguments",\n }\n },\n "required": ["name", "args"]\n }\n }\n}'}]
+
+    spark = ChatSparkLLM(
+        spark_api_url=os.environ["SPARKAI_URL"],
+        spark_app_id=os.environ["SPARKAI_APP_ID"],
+        spark_api_key=os.environ["SPARKAI_API_KEY"],
+        spark_api_secret=os.environ["SPARKAI_API_SECRET"],
+        spark_llm_domain=os.environ["SPARKAI_DOMAIN"],
+        streaming=True,
+
     )
+    messages = [ChatMessage(
+        role="user",
+        content=messages[0]['content']
 
-    client.connect()
-    Event().wait()
-
+    )]
+    handler = ChunkPrintHandler()
+    a = spark.generate([messages], callbacks=[handler])
+    print(a)
 ```
 
-### 非交互式 (建议Demo使用)
+其中 `ChunkPrintHandler` 为回调类，可以在回调类处理流式响应的chunk，
+该类简单实现如下:
 
 ```python
-import logging
+class ChunkPrintHandler(BaseCallbackHandler):
+    """Callback Handler that prints to std out."""
 
-logging.basicConfig(level=logging.WARNING)
+    def __init__(self, color: Optional[str] = None) -> None:
+        """Initialize callback handler."""
+        self.color = color
 
-import os
-from threading import Event
-from sparkai.socket_mode.websocket_client import SparkAISocketModeClient
-from sparkai.memory import ChatMessageHistory
+    def on_llm_new_token(self,  token: str,
+        *,
+        chunk:  None,
+        **kwargs: Any,):
+        print(token)
 
-if __name__ == "__main__":
-    client = SparkAISocketModeClient(
-        app_id=os.environ.get("APP_ID"),
-        api_key=os.environ.get("API_KEY"),
-        api_secret=os.environ.get("API_SECRET"),
-        chat_interactive=False,
-        trace_enabled=False,
-        conversation_memory=ChatMessageHistory()
+```
+上述在 on_llm_new_token 实现您的流式处理逻辑
+
+### FunctionCall功能
+比如将 mulitply 乘法函数定义传入 ChatSparkLLM
+
+```python
+def multiply(a,b :int) -> int:
+    """乘法函数，
+    Args:
+        a: 输入a
+        b: 输入b
+    Return:
+         返回 a*b 结果
+    """
+    print("hello success")
+    return a*b
+
+def test_function_call():
+    from sparkai.core.callbacks import StdOutCallbackHandler
+    messages = [{'role': 'user',
+                 'content': "帮我算下 12乘以12"}]
+    spark = ChatSparkLLM(
+        spark_api_url=os.environ["SPARKAI_URL"],
+        spark_app_id=os.environ["SPARKAI_APP_ID"],
+        spark_api_key=os.environ["SPARKAI_API_KEY"],
+        spark_api_secret=os.environ["SPARKAI_API_SECRET"],
+        spark_llm_domain=os.environ["SPARKAI_DOMAIN"],
+        streaming=False,
+
     )
+    function_definition = [convert_to_openai_tool(multiply)]
+    print(json.dumps(convert_to_openai_tool(multiply),ensure_ascii=False))
+    messages = [ChatMessage(
+        role="user",
+        content=messages[0]['content']
 
-    client.connect()
-    result = client.chat_in("你是谁")
-    print(result)
-    Event().wait()
+    )]
+    handler = ChunkPrintHandler()
+    a = spark.generate([messages], callbacks=[handler],function_definition=function_definition)
+    print(a)
+```
+得到输出
+
+```bash
+PASSED                                   [100%]{"type": "function", "function": {"name": "multiply", "description": "乘法函数，\nArgs:\n    a: 输入a\n    b: 输入b\nReturn:\n     返回 a*b 结果", "parameters": {"type": "object", "properties": {"b": {"type": "integer"}}, "required": ["a", "b"]}}}
+generations=[[ChatGeneration(message=FunctionCallMessage(content='', function_call={'arguments': '{"a":12,"b":12}', 'name': 'multiply'}))]] llm_output={'token_usage': {'question_tokens': 9, 'prompt_tokens': 9, 'completion_tokens': 0, 'total_tokens': 9}} run=[RunInfo(run_id=UUID('95bf4e2e-6c90-41aa-9ddf-51b707d4d3c7'))]
 
 ```
 
-### Chat (建议Demo使用)
+### 本地代理方式星火SparkAPI转OpenAI接口 
 
-对话式 Chat交互示例(注意，由于需要支持多行，故单行EOF表示结束问题输入)
+**仅供用于调试或者应用于三方框架快速集成星火**
 
-```shell
-Question: 你好，你是谁？
-EOF
-Anwser:  您好，我是科大讯飞研发的认知智能大模型，我的名字叫讯飞星火认知大模型。我可以和人类进行自然交流，解答问题，高效完成各领域认知智能需求。
-Question: 空腹的时候可以吃饭吗？
-EOF
-Anwser:  当然可以。空腹时吃饭是正常的，也是我们每天需要进行的生理活动之一。在饥饿状态下，身体会释放胃酸和消化酶来帮助消化食物，从而提供能量和营养物质。但是，如果您有胃肠道问题或糖尿病等疾病，应该遵循医生的建议，并注意饮食习惯。
-Question: 生蚝熟了之后还是生蚝吗？
-EOF
-Anwser:  熟了的生蚝和生蚝本质上是相同的。但是，由于烹饪过程可能会改变其味道和口感，所以在食用之前需要注意一些区别：
+```python
+python -m sparkai.spark_proxy.main 
+```
+运行后如下:
 
-1. 颜色：熟蚝的颜色通常会变成灰色或棕色。而生的生蚝通常呈鲜亮的贝壳色。
+```bash
+INFO:     Started server process [57295]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8008 (Press CTRL+C to quit)
 
-2. 味道：熟蚝的味道可能会变得更加柔和、甜美或咸味，而生的生蚝则会有更加浓烈的海鲜味道。
 
-3. 肉质：生的生蚝通常具有坚韧的肉质和一定的弹性，而熟蚝则通常肉质比较柔软且容易入口。
 
-总之，无论您选择生的生蚝还是熟的生蚝，都需要确保食品安全和卫生条件。同时，对于孕妇、老年人以及儿童等特殊人群来说，需要谨慎食用，最好在医生或营养师的建议下进行饮食安排。
-Question: 眼镜发明之前，眼镜蛇叫什么？
-EOF
-Anwser:  眼镜蛇这个名称和眼镜的发明没有直接的关系，它是以头部的形状而得名的。在古代，人们观察到这种蛇的眼睛很大，且位于头骨上部的一个小凸起上，看起来就像佩戴了一副小眼镜，因此被称为眼镜蛇。
-
-因此，无论眼镜是否被发明出来，眼镜蛇的名字都存在，并且是以其头部特征来命名的。
-Question: 玉皇大帝住在平流层还是对流层？
-EOF
-Anwser:  玉皇大帝是道教中的最高神祇之一，被视为天地万物的主宰者，不属于地球大气层的任何一层。因此，他没有居住在平流层或对流层中，这个概念只适用于地球大气层的分层。
-Question: 为什么外国超级英雄趴着飞，中国的站着飞？
-EOF
-Anwser:  这个问题的答案是：外国超级英雄趴着飞和中国超级英雄站着飞都是虚构世界中的概念，不存在真实的科学依据。
-
-在不同的文化背景和漫画书中，超级英雄们的飞行方式都可能存在差异。一些外国超级英雄常常使用类似蜘蛛侠的“蜘蛛步”或类似X战警的“弹跳飞行”等方式来实现高速飞行。而一些中国的超级英雄则更多地采用了站立飞行的方式，例如孙悟空和超人等角色就经常被描绘成直接站在空中或者从高处跳下来后展开翅膀进行飞行。
-
-需要明确的是，这些飞行方式只存在于虚构世界中，与现实生活中的科学原理没有关联。因此，我们无法对超级英雄们的飞行方式进行科学上的解释或评价。
-Question: 秃顶的人洗头，应该用洗发水还是洗面奶？
-EOF
-Anwser:  无论是否秃顶，洗头时应该使用洗发水而不是洗面奶。洗发水是一种专门用于清洁头发的洗涤剂，可以有效去除头皮油脂、污垢和汗渍，保持头发健康和清洁。而洗面奶则是专门为清洁面部皮肤设计的，可能会过于温和或含有去油成分，如果用在头发上会不够有效，容易使头发变干、易断。
-
-对于秃顶的人来说，使用洗发水能够更有效地清洁头皮和毛发根部，有助于减少头皮屑、防止毛囊感染和脱发等问题。因此，建议秃顶的人选择适合自己发质的洗发水进行清洁。
 ```
 
 
@@ -176,14 +216,12 @@ Anwser:  无论是否秃顶，洗头时应该使用洗发水而不是洗面奶�
 
 ## 已知问题
 
-* WS 长连接5分钟链路没有任何交互，服务的会强制关闭链接
+* 项目目前开发阶段，有一些冗余代码，人力有限，部分思想借鉴开源实现
 
 ## URL
 
-* N方向： ws(s)://spark-api-n.xf-yun.com/v1.1/chat
-* wss://spark-api.xf-yun.com/v2.1/chat
+* wss://spark-api.xf-yun.com/v3.5/chat
 
 ## 致谢
 
-* [Stripe Python Library](https://github.com/stripe/stripe-python) 参考并引用
 * [Langchain Memory](https://github.com/hwchase17/langchain) 移植部分memory实现

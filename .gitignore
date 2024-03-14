@@ -3,5 +3,6 @@
 .venv
 poetry.lock
 .env
+.env_*
 
 

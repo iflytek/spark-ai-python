@@ -9,7 +9,7 @@ from sparkai.core.messages.base import (
     messages_to_dict,
 )
 from sparkai.core.messages.chat import ChatMessage, ChatMessageChunk
-from sparkai.core.messages.function import FunctionMessage, FunctionMessageChunk
+from sparkai.core.messages.function import FunctionMessage, FunctionMessageChunk,FunctionCallMessageChunk,FunctionCallMessage
 from sparkai.core.messages.human import HumanMessage, HumanMessageChunk
 from sparkai.core.messages.system import SystemMessage, SystemMessageChunk
 from sparkai.core.messages.tool import ToolMessage, ToolMessageChunk
@@ -54,6 +54,8 @@ def get_buffer_string(
             role = "System"
         elif isinstance(m, FunctionMessage):
             role = "Function"
+        elif isinstance(m, FunctionCallMessage):
+            role = ai_prefix
         elif isinstance(m, ToolMessage):
             role = "Tool"
         elif isinstance(m, ChatMessage):
@@ -80,6 +82,8 @@ def _message_from_dict(message: dict) -> BaseMessage:
         return ChatMessage(**message["data"])
     elif _type == "function":
         return FunctionMessage(**message["data"])
+    elif _type == "function_call":
+        return FunctionCallMessage(**message["data"])
     elif _type == "tool":
         return ToolMessage(**message["data"])
     elif _type == "AIMessageChunk":
@@ -88,6 +92,8 @@ def _message_from_dict(message: dict) -> BaseMessage:
         return HumanMessageChunk(**message["data"])
     elif _type == "FunctionMessageChunk":
         return FunctionMessageChunk(**message["data"])
+    elif _type == "FunctionCallMessageChunk":
+        return FunctionCallMessageChunk(**message["data"])
     elif _type == "ToolMessageChunk":
         return ToolMessageChunk(**message["data"])
     elif _type == "SystemMessageChunk":
@@ -151,6 +157,8 @@ def _create_message_from_message_type(
         message = SystemMessage(content=content, **kwargs)
     elif message_type == "function":
         message = FunctionMessage(content=content, **kwargs)
+    elif message_type == "function_call":
+        message = FunctionCallMessage(content=content, **kwargs)
     elif message_type == "tool":
         message = ToolMessage(content=content, **kwargs)
     else:
@@ -231,6 +239,8 @@ __all__ = [
     "ChatMessageChunk",
     "FunctionMessage",
     "FunctionMessageChunk",
+    "FunctionCallMessage",
+    "FunctionCallMessageChunk",
     "HumanMessage",
     "HumanMessageChunk",
     "SystemMessage",
