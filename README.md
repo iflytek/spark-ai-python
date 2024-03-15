@@ -210,14 +210,17 @@ INFO:     Uvicorn running on http://0.0.0.0:8008 (Press CTRL+C to quit)
 
 ```
 
-随后在需要配置 
+之后再需要配置`OPENAI`配置上述 本地url 和 星火 ```key&secret&appid"```组成的key即可以openai接口形式调用星火大模型
 
-* open_api_key的地方 配置格式key为: ```key&secret&appid"``` 格式的key
+* open_api_key: 配置格式key为: ```key&secret&appid"``` 格式的key
 * openai_base_url: 你本地 ip:8008端口
 
 ## 欢迎贡献
 
 扫码加入交流群
+
+
+
 
 ## 已知问题
 
@@ -229,4 +232,4 @@ INFO:     Uvicorn running on http://0.0.0.0:8008 (Press CTRL+C to quit)
 
 ## 致谢
 
-* [Langchain Memory](https://github.com/hwchase17/langchain) 移植部分memory实现
+* [Langchain Community](https://github.com/hwchase17/langchain)
