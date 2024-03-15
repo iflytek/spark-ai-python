@@ -156,3 +156,4 @@ def test_function_call_stream():
 if __name__ == '__main__':
     test_once()
     test_stream()
+    test_function_call_stream()

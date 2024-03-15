@@ -6,7 +6,6 @@ import logging
 import uuid
 from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
-from contextlib import asynccontextmanager, contextmanager
 from contextvars import copy_context
 from typing import (
     TYPE_CHECKING,
@@ -32,9 +31,7 @@ from sparkai.core.callbacks.base import (
     BaseCallbackHandler,
     BaseCallbackManager,
     Callbacks,
-    ChainManagerMixin,
     LLMManagerMixin,
-    RetrieverManagerMixin,
     RunManagerMixin,
     ToolManagerMixin,
 )
@@ -43,7 +40,6 @@ from sparkai.core.messages import BaseMessage, get_buffer_string
 from sparkai.core.utils.env import env_var_is_set
 
 if TYPE_CHECKING:
-    from sparkai.core.agents import AgentAction, AgentFinish
     from sparkai.core.outputs import ChatGenerationChunk, GenerationChunk, LLMResult
 
 logger = logging.getLogger(__name__)
@@ -54,151 +50,6 @@ def _get_debug() -> bool:
 
     return get_debug()
 
-
-@contextmanager
-def trace_as_chain_group(
-    group_name: str,
-    callback_manager: Optional[CallbackManager] = None,
-    *,
-    inputs: Optional[Dict[str, Any]] = None,
-    project_name: Optional[str] = None,
-    example_id: Optional[Union[str, UUID]] = None,
-    run_id: Optional[UUID] = None,
-    tags: Optional[List[str]] = None,
-) -> Generator[CallbackManagerForChainGroup, None, None]:
-    """Get a callback manager for a chain group in a context manager.
-    Useful for grouping different calls together as a single run even if
-    they aren't composed in a single chain.
-
-    Args:
-        group_name (str): The name of the chain group.
-        callback_manager (CallbackManager, optional): The callback manager to use.
-        inputs (Dict[str, Any], optional): The inputs to the chain group.
-        project_name (str, optional): The name of the project.
-            Defaults to None.
-        example_id (str or UUID, optional): The ID of the example.
-            Defaults to None.
-        run_id (UUID, optional): The ID of the run.
-        tags (List[str], optional): The inheritable tags to apply to all runs.
-            Defaults to None.
-
-    Note: must have LANGCHAIN_TRACING_V2 env var set to true to see the trace in LangSmith.
-
-    Returns:
-        CallbackManagerForChainGroup: The callback manager for the chain group.
-
-    Example:
-        .. code-block:: python
-
-            llm_input = "Foo"
-            with trace_as_chain_group("group_name", inputs={"input": llm_input}) as manager:
-                # Use the callback manager for the chain group
-                res = llm.predict(llm_input, callbacks=manager)
-                manager.on_chain_end({"output": res})
-    """  # noqa: E501
-    from sparkai.core.tracers.context import _get_trace_callbacks
-
-    cb = _get_trace_callbacks(
-        project_name, example_id, callback_manager=callback_manager
-    )
-    cm = CallbackManager.configure(
-        inheritable_callbacks=cb,
-        inheritable_tags=tags,
-    )
-
-    run_manager = cm.on_chain_start({"name": group_name}, inputs or {}, run_id=run_id)
-    child_cm = run_manager.get_child()
-    group_cm = CallbackManagerForChainGroup(
-        child_cm.handlers,
-        child_cm.inheritable_handlers,
-        child_cm.parent_run_id,
-        parent_run_manager=run_manager,
-        tags=child_cm.tags,
-        inheritable_tags=child_cm.inheritable_tags,
-        metadata=child_cm.metadata,
-        inheritable_metadata=child_cm.inheritable_metadata,
-    )
-    try:
-        yield group_cm
-    except Exception as e:
-        if not group_cm.ended:
-            run_manager.on_chain_error(e)
-        raise e
-    else:
-        if not group_cm.ended:
-            run_manager.on_chain_end({})
-
-
-@asynccontextmanager
-async def atrace_as_chain_group(
-    group_name: str,
-    callback_manager: Optional[AsyncCallbackManager] = None,
-    *,
-    inputs: Optional[Dict[str, Any]] = None,
-    project_name: Optional[str] = None,
-    example_id: Optional[Union[str, UUID]] = None,
-    run_id: Optional[UUID] = None,
-    tags: Optional[List[str]] = None,
-) -> AsyncGenerator[AsyncCallbackManagerForChainGroup, None]:
-    """Get an async callback manager for a chain group in a context manager.
-    Useful for grouping different async calls together as a single run even if
-    they aren't composed in a single chain.
-
-    Args:
-        group_name (str): The name of the chain group.
-        callback_manager (AsyncCallbackManager, optional): The async callback manager to use,
-            which manages tracing and other callback behavior.
-        project_name (str, optional): The name of the project.
-            Defaults to None.
-        example_id (str or UUID, optional): The ID of the example.
-            Defaults to None.
-        run_id (UUID, optional): The ID of the run.
-        tags (List[str], optional): The inheritable tags to apply to all runs.
-            Defaults to None.
-    Returns:
-        AsyncCallbackManager: The async callback manager for the chain group.
-
-    Note: must have LANGCHAIN_TRACING_V2 env var set to true to see the trace in LangSmith.
-
-    Example:
-        .. code-block:: python
-
-            llm_input = "Foo"
-            async with atrace_as_chain_group("group_name", inputs={"input": llm_input}) as manager:
-                # Use the async callback manager for the chain group
-                res = await llm.apredict(llm_input, callbacks=manager)
-                await manager.on_chain_end({"output": res})
-    """  # noqa: E501
-    from sparkai.core.tracers.context import _get_trace_callbacks
-
-    cb = _get_trace_callbacks(
-        project_name, example_id, callback_manager=callback_manager
-    )
-    cm = AsyncCallbackManager.configure(inheritable_callbacks=cb, inheritable_tags=tags)
-
-    run_manager = await cm.on_chain_start(
-        {"name": group_name}, inputs or {}, run_id=run_id
-    )
-    child_cm = run_manager.get_child()
-    group_cm = AsyncCallbackManagerForChainGroup(
-        child_cm.handlers,
-        child_cm.inheritable_handlers,
-        child_cm.parent_run_id,
-        parent_run_manager=run_manager,
-        tags=child_cm.tags,
-        inheritable_tags=child_cm.inheritable_tags,
-        metadata=child_cm.metadata,
-        inheritable_metadata=child_cm.inheritable_metadata,
-    )
-    try:
-        yield group_cm
-    except Exception as e:
-        if not group_cm.ended:
-            await run_manager.on_chain_error(e)
-        raise e
-    else:
-        if not group_cm.ended:
-            await run_manager.on_chain_end({})
 
 
 def handle_event(
@@ -749,189 +600,6 @@ class AsyncCallbackManagerForLLMRun(AsyncRunManager, LLMManagerMixin):
         )
 
 
-class CallbackManagerForChainRun(ParentRunManager, ChainManagerMixin):
-    """Callback manager for chain run."""
-
-    def on_chain_end(self, outputs: Union[Dict[str, Any], Any], **kwargs: Any) -> None:
-        """Run when chain ends running.
-
-        Args:
-            outputs (Union[Dict[str, Any], Any]): The outputs of the chain.
-        """
-        handle_event(
-            self.handlers,
-            "on_chain_end",
-            "ignore_chain",
-            outputs,
-            run_id=self.run_id,
-            parent_run_id=self.parent_run_id,
-            tags=self.tags,
-            **kwargs,
-        )
-
-    def on_chain_error(
-        self,
-        error: BaseException,
-        **kwargs: Any,
-    ) -> None:
-        """Run when chain errors.
-
-        Args:
-            error (Exception or KeyboardInterrupt): The error.
-        """
-        handle_event(
-            self.handlers,
-            "on_chain_error",
-            "ignore_chain",
-            error,
-            run_id=self.run_id,
-            parent_run_id=self.parent_run_id,
-            tags=self.tags,
-            **kwargs,
-        )
-
-    def on_agent_action(self, action: AgentAction, **kwargs: Any) -> Any:
-        """Run when agent action is received.
-
-        Args:
-            action (AgentAction): The agent action.
-
-        Returns:
-            Any: The result of the callback.
-        """
-        handle_event(
-            self.handlers,
-            "on_agent_action",
-            "ignore_agent",
-            action,
-            run_id=self.run_id,
-            parent_run_id=self.parent_run_id,
-            tags=self.tags,
-            **kwargs,
-        )
-
-    def on_agent_finish(self, finish: AgentFinish, **kwargs: Any) -> Any:
-        """Run when agent finish is received.
-
-        Args:
-            finish (AgentFinish): The agent finish.
-
-        Returns:
-            Any: The result of the callback.
-        """
-        handle_event(
-            self.handlers,
-            "on_agent_finish",
-            "ignore_agent",
-            finish,
-            run_id=self.run_id,
-            parent_run_id=self.parent_run_id,
-            tags=self.tags,
-            **kwargs,
-        )
-
-
-class AsyncCallbackManagerForChainRun(AsyncParentRunManager, ChainManagerMixin):
-    """Async callback manager for chain run."""
-
-    def get_sync(self) -> CallbackManagerForChainRun:
-        """Get the equivalent sync RunManager.
-
-        Returns:
-            CallbackManagerForChainRun: The sync RunManager.
-        """
-        return CallbackManagerForChainRun(
-            run_id=self.run_id,
-            handlers=self.handlers,
-            inheritable_handlers=self.inheritable_handlers,
-            parent_run_id=self.parent_run_id,
-            tags=self.tags,
-            inheritable_tags=self.inheritable_tags,
-            metadata=self.metadata,
-            inheritable_metadata=self.inheritable_metadata,
-        )
-
-    async def on_chain_end(
-        self, outputs: Union[Dict[str, Any], Any], **kwargs: Any
-    ) -> None:
-        """Run when chain ends running.
-
-        Args:
-            outputs (Union[Dict[str, Any], Any]): The outputs of the chain.
-        """
-        await ahandle_event(
-            self.handlers,
-            "on_chain_end",
-            "ignore_chain",
-            outputs,
-            run_id=self.run_id,
-            parent_run_id=self.parent_run_id,
-            tags=self.tags,
-            **kwargs,
-        )
-
-    async def on_chain_error(
-        self,
-        error: BaseException,
-        **kwargs: Any,
-    ) -> None:
-        """Run when chain errors.
-
-        Args:
-            error (Exception or KeyboardInterrupt): The error.
-        """
-        await ahandle_event(
-            self.handlers,
-            "on_chain_error",
-            "ignore_chain",
-            error,
-            run_id=self.run_id,
-            parent_run_id=self.parent_run_id,
-            tags=self.tags,
-            **kwargs,
-        )
-
-    async def on_agent_action(self, action: AgentAction, **kwargs: Any) -> Any:
-        """Run when agent action is received.
-
-        Args:
-            action (AgentAction): The agent action.
-
-        Returns:
-            Any: The result of the callback.
-        """
-        await ahandle_event(
-            self.handlers,
-            "on_agent_action",
-            "ignore_agent",
-            action,
-            run_id=self.run_id,
-            parent_run_id=self.parent_run_id,
-            tags=self.tags,
-            **kwargs,
-        )
-
-    async def on_agent_finish(self, finish: AgentFinish, **kwargs: Any) -> Any:
-        """Run when agent finish is received.
-
-        Args:
-            finish (AgentFinish): The agent finish.
-
-        Returns:
-            Any: The result of the callback.
-        """
-        await ahandle_event(
-            self.handlers,
-            "on_agent_finish",
-            "ignore_agent",
-            finish,
-            run_id=self.run_id,
-            parent_run_id=self.parent_run_id,
-            tags=self.tags,
-            **kwargs,
-        )
-
-
 class CallbackManagerForToolRun(ParentRunManager, ToolManagerMixin):
     """Callback manager for tool run."""
 
@@ -1140,49 +808,6 @@ class CallbackManager(BaseCallbackManager):
 
         return managers
 
-    def on_chain_start(
-        self,
-        serialized: Dict[str, Any],
-        inputs: Union[Dict[str, Any], Any],
-        run_id: Optional[UUID] = None,
-        **kwargs: Any,
-    ) -> CallbackManagerForChainRun:
-        """Run when chain starts running.
-
-        Args:
-            serialized (Dict[str, Any]): The serialized chain.
-            inputs (Union[Dict[str, Any], Any]): The inputs to the chain.
-            run_id (UUID, optional): The ID of the run. Defaults to None.
-
-        Returns:
-            CallbackManagerForChainRun: The callback manager for the chain run.
-        """
-        if run_id is None:
-            run_id = uuid.uuid4()
-        handle_event(
-            self.handlers,
-            "on_chain_start",
-            "ignore_chain",
-            serialized,
-            inputs,
-            run_id=run_id,
-            parent_run_id=self.parent_run_id,
-            tags=self.tags,
-            metadata=self.metadata,
-            **kwargs,
-        )
-
-        return CallbackManagerForChainRun(
-            run_id=run_id,
-            handlers=self.handlers,
-            inheritable_handlers=self.inheritable_handlers,
-            parent_run_id=self.parent_run_id,
-            tags=self.tags,
-            inheritable_tags=self.inheritable_tags,
-            metadata=self.metadata,
-            inheritable_metadata=self.inheritable_metadata,
-        )
-
     def on_tool_start(
         self,
         serialized: Dict[str, Any],
@@ -1278,62 +903,6 @@ class CallbackManager(BaseCallbackManager):
             inheritable_metadata,
             local_metadata,
         )
-
-
-class CallbackManagerForChainGroup(CallbackManager):
-    """Callback manager for the chain group."""
-
-    def __init__(
-        self,
-        handlers: List[BaseCallbackHandler],
-        inheritable_handlers: Optional[List[BaseCallbackHandler]] = None,
-        parent_run_id: Optional[UUID] = None,
-        *,
-        parent_run_manager: CallbackManagerForChainRun,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(
-            handlers,
-            inheritable_handlers,
-            parent_run_id,
-            **kwargs,
-        )
-        self.parent_run_manager = parent_run_manager
-        self.ended = False
-
-    def copy(self) -> CallbackManagerForChainGroup:
-        return self.__class__(
-            handlers=self.handlers,
-            inheritable_handlers=self.inheritable_handlers,
-            parent_run_id=self.parent_run_id,
-            tags=self.tags,
-            inheritable_tags=self.inheritable_tags,
-            metadata=self.metadata,
-            inheritable_metadata=self.inheritable_metadata,
-            parent_run_manager=self.parent_run_manager,
-        )
-
-    def on_chain_end(self, outputs: Union[Dict[str, Any], Any], **kwargs: Any) -> None:
-        """Run when traced chain group ends.
-
-        Args:
-            outputs (Union[Dict[str, Any], Any]): The outputs of the chain.
-        """
-        self.ended = True
-        return self.parent_run_manager.on_chain_end(outputs, **kwargs)
-
-    def on_chain_error(
-        self,
-        error: BaseException,
-        **kwargs: Any,
-    ) -> None:
-        """Run when chain errors.
-
-        Args:
-            error (Exception or KeyboardInterrupt): The error.
-        """
-        self.ended = True
-        return self.parent_run_manager.on_chain_error(error, **kwargs)
 
 
 class AsyncCallbackManager(BaseCallbackManager):
@@ -1456,50 +1025,6 @@ class AsyncCallbackManager(BaseCallbackManager):
         await asyncio.gather(*tasks)
         return managers
 
-    async def on_chain_start(
-        self,
-        serialized: Dict[str, Any],
-        inputs: Union[Dict[str, Any], Any],
-        run_id: Optional[UUID] = None,
-        **kwargs: Any,
-    ) -> AsyncCallbackManagerForChainRun:
-        """Run when chain starts running.
-
-        Args:
-            serialized (Dict[str, Any]): The serialized chain.
-            inputs (Union[Dict[str, Any], Any]): The inputs to the chain.
-            run_id (UUID, optional): The ID of the run. Defaults to None.
-
-        Returns:
-            AsyncCallbackManagerForChainRun: The async callback manager
-                for the chain run.
-        """
-        if run_id is None:
-            run_id = uuid.uuid4()
-
-        await ahandle_event(
-            self.handlers,
-            "on_chain_start",
-            "ignore_chain",
-            serialized,
-            inputs,
-            run_id=run_id,
-            parent_run_id=self.parent_run_id,
-            tags=self.tags,
-            metadata=self.metadata,
-            **kwargs,
-        )
-
-        return AsyncCallbackManagerForChainRun(
-            run_id=run_id,
-            handlers=self.handlers,
-            inheritable_handlers=self.inheritable_handlers,
-            parent_run_id=self.parent_run_id,
-            tags=self.tags,
-            inheritable_tags=self.inheritable_tags,
-            metadata=self.metadata,
-            inheritable_metadata=self.inheritable_metadata,
-        )
 
     async def on_tool_start(
         self,
@@ -1592,63 +1117,6 @@ class AsyncCallbackManager(BaseCallbackManager):
             local_metadata,
         )
 
-
-class AsyncCallbackManagerForChainGroup(AsyncCallbackManager):
-    """Async callback manager for the chain group."""
-
-    def __init__(
-        self,
-        handlers: List[BaseCallbackHandler],
-        inheritable_handlers: Optional[List[BaseCallbackHandler]] = None,
-        parent_run_id: Optional[UUID] = None,
-        *,
-        parent_run_manager: AsyncCallbackManagerForChainRun,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(
-            handlers,
-            inheritable_handlers,
-            parent_run_id,
-            **kwargs,
-        )
-        self.parent_run_manager = parent_run_manager
-        self.ended = False
-
-    def copy(self) -> AsyncCallbackManagerForChainGroup:
-        return self.__class__(
-            handlers=self.handlers,
-            inheritable_handlers=self.inheritable_handlers,
-            parent_run_id=self.parent_run_id,
-            tags=self.tags,
-            inheritable_tags=self.inheritable_tags,
-            metadata=self.metadata,
-            inheritable_metadata=self.inheritable_metadata,
-            parent_run_manager=self.parent_run_manager,
-        )
-
-    async def on_chain_end(
-        self, outputs: Union[Dict[str, Any], Any], **kwargs: Any
-    ) -> None:
-        """Run when traced chain group ends.
-
-        Args:
-            outputs (Union[Dict[str, Any], Any]): The outputs of the chain.
-        """
-        self.ended = True
-        await self.parent_run_manager.on_chain_end(outputs, **kwargs)
-
-    async def on_chain_error(
-        self,
-        error: BaseException,
-        **kwargs: Any,
-    ) -> None:
-        """Run when chain errors.
-
-        Args:
-            error (Exception or KeyboardInterrupt): The error.
-        """
-        self.ended = True
-        await self.parent_run_manager.on_chain_error(error, **kwargs)
 
 
 T = TypeVar("T", CallbackManager, AsyncCallbackManager)

@@ -2,17 +2,20 @@
 
 本Python SDK库帮助用户更快体验讯飞星火大模型
 
-目前基于Langchain的一些基础数据类型移植开发得到本项目，感谢社区 [项目正在开发中]
+目前基于Langchain的一些基础数据类型移植开发得到本项目，部分核心实现如有雷同，纯属"学习"！
+
+***感谢社区(Langchain项目以及SparkLLM部分committer)[项目正在开发中]***
 
 ## 近期规划新特性[待演进]
 
 - [x] 极简的接入,快速调用讯飞星火大模型
 - [x] 已发布pypi [国内源均可安装]
-- [ ] 支持 HTTP SPARK API
-- [x] 本地代理方式星火SparkAPI转OpenAI接口
+- [x] 本地代理方式星火SparkAPI转OpenAI接口(让你快速在开源agent框架集成星火大模型)
 - [ ] SDK方式适配OpenAI接口 ChatCompletion接口 
 - [ ] SDK方式适配OpenAI Embedding接口
-- [ ] 集成星火开源框架 Doc Examples , AutoGPT/AutoGen/MetaGpt/Langchain/PromptFlow/.... 等
+- [ ] 开源框架AutoGPT/AutoGen/MetaGpt/Langchain/PromptFlow/.... 快速集成星火示例
+- [ ] 无缝对接[讯飞Maas平台](https://training.xfyun.cn/)微调训练托管的大模型API
+- [ ] 支持 HTTP SPARK API
 
 ## 安装
 
@@ -141,7 +144,7 @@ class ChunkPrintHandler(BaseCallbackHandler):
         print(token)
 
 ```
-上述在 on_llm_new_token 实现您的流式处理逻辑
+上述在 on_llm_new_token 实现您的流式处理逻辑,如需定制流式处理逻辑，请参考上述实现，继承: BaseCallbackHandler
 
 ### FunctionCall功能
 比如将 mulitply 乘法函数定义传入 ChatSparkLLM
