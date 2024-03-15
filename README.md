@@ -32,6 +32,7 @@
 - [ ] 开源框架AutoGPT/AutoGen/MetaGpt/Langchain/PromptFlow/.... 快速集成星火示例
 - [ ] 无缝对接[讯飞Maas平台](https://training.xfyun.cn/)微调训练托管的大模型API
 - [ ] 支持 HTTP SPARK API
+- [ ] 支持大模型多模态等能力
 
 ## 安装
 
