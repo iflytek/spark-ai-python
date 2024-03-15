@@ -2,6 +2,12 @@
 
 本Python SDK库帮助用户更快体验讯飞星火大模型
 
+## 项目地址
+
+* Github: [https://github.com/iflytek/spark-ai-python](https://github.com/iflytek/spark-ai-python)
+欢迎点赞，star 
+* 
+* 
 ## 前言
 
 长久以来，python接入星火大模型没有一个统一官方维护的Library，
