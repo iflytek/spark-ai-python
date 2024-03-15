@@ -17,6 +17,8 @@
 
 
 ![!img](log.jpg)
+**本logo出自[星火大模型](https://xinghuo.xfyun.cn/)
+
 ***感谢社区(Langchain项目以及SparkLLM部分committer)[项目正在开发中]***
 
 ## 近期规划新特性[待演进]
