@@ -6,8 +6,7 @@
 
 * Github: [https://github.com/iflytek/spark-ai-python](https://github.com/iflytek/spark-ai-python)
 欢迎点赞，star 
-* 
-* 
+
 ## 前言
 
 长久以来，python接入星火大模型没有一个统一官方维护的Library，
