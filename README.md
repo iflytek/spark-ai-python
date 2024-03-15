@@ -4,6 +4,7 @@
 
 目前基于Langchain的一些基础数据类型移植开发得到本项目，部分核心实现如有雷同，纯属"学习"！
 
+![!img](log.jpg)
 ***感谢社区(Langchain项目以及SparkLLM部分committer)[项目正在开发中]***
 
 ## 近期规划新特性[待演进]
@@ -22,11 +23,11 @@
 如果你不需要源码，只需要通过 `pip `快速安装
 
 ```sh
-pip install --upgrade spark_ai_sdk
+pip install --upgrade spark_ai_python
 ```
 国内使用:
 ```bash
-pip install -i https://pypi.tuna.tsinghua.edu.cn/simple spark_ai_sdk
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple spark_ai_python
 ```
 
 Install from source with:
@@ -218,7 +219,6 @@ INFO:     Uvicorn running on http://0.0.0.0:8008 (Press CTRL+C to quit)
 ## 欢迎贡献
 
 扫码加入交流群
-
 
 
 
