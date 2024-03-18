@@ -103,7 +103,7 @@ if __name__ == '__main__':
     a = spark.generate([messages], callbacks=[handler])
     print(a)
 ```
-注意当streaming设置为 False是, callbacks 并不起作用。
+注意当`streaming`设置为 `False`的时候, callbacks 并不起作用。
 
 ### 流式返回结果
 
