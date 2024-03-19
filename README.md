@@ -237,7 +237,7 @@ INFO:     Uvicorn running on http://0.0.0.0:8008 (Press CTRL+C to quit)
 
 扫码加入交流群
 
-
+![img](weichat.jpg)
 
 ## 已知问题
 
