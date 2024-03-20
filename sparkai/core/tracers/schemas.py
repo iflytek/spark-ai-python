@@ -6,23 +6,12 @@ import warnings
 from typing import Any, Dict, List, Optional, Type
 from uuid import UUID
 
-from langsmith.schemas import RunBase as BaseRunV2
-from langsmith.schemas import RunTypeEnum as RunTypeEnumDep
 
 from sparkai.core._api import deprecated
 from sparkai.core.outputs import LLMResult
 from sparkai.core.pydantic_v1 import BaseModel, Field, root_validator
 
 
-@deprecated("0.1.0", alternative="Use string instead.", removal="0.2.0")
-def RunTypeEnum() -> Type[RunTypeEnumDep]:
-    """RunTypeEnum."""
-    warnings.warn(
-        "RunTypeEnum is deprecated. Please directly use a string instead"
-        " (e.g. 'llm', 'chain', 'tool').",
-        DeprecationWarning,
-    )
-    return RunTypeEnumDep
 
 
 @deprecated("0.1.0", removal="0.2.0")
@@ -110,40 +99,12 @@ class ToolRun(BaseRun):
 # Begin V2 API Schemas
 
 
-class Run(BaseRunV2):
-    """Run schema for the V2 API in the Tracer."""
 
-    execution_order: int
-    child_execution_order: int
-    child_runs: List[Run] = Field(default_factory=list)
-    tags: Optional[List[str]] = Field(default_factory=list)
-    events: List[Dict[str, Any]] = Field(default_factory=list)
-    trace_id: Optional[UUID] = None
-    dotted_order: Optional[str] = None
-
-    @root_validator(pre=True)
-    def assign_name(cls, values: dict) -> dict:
-        """Assign name to the run."""
-        if values.get("name") is None:
-            if "name" in values["serialized"]:
-                values["name"] = values["serialized"]["name"]
-            elif "id" in values["serialized"]:
-                values["name"] = values["serialized"]["id"][-1]
-        if values.get("events") is None:
-            values["events"] = []
-        return values
-
-
-ChainRun.update_forward_refs()
-ToolRun.update_forward_refs()
-Run.update_forward_refs()
 
 __all__ = [
     "BaseRun",
     "ChainRun",
     "LLMRun",
-    "Run",
-    "RunTypeEnum",
     "ToolRun",
     "TracerSession",
     "TracerSessionBase",

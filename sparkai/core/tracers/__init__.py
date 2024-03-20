@@ -13,7 +13,6 @@ __all__ = [
     "EvaluatorCallbackHandler",
     "LangChainTracer",
     "ConsoleCallbackHandler",
-    "Run",
     "RunLog",
     "RunLogPatch",
     "LogStreamCallbackHandler",
@@ -27,5 +26,4 @@ from sparkai.core.tracers.log_stream import (
     RunLog,
     RunLogPatch,
 )
-from sparkai.core.tracers.schemas import Run
 from sparkai.core.tracers.stdout import ConsoleCallbackHandler

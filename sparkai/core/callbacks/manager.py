@@ -1155,13 +1155,6 @@ def _configure(
     Returns:
         T: The configured callback manager.
     """
-    from  sparkai.core.tracers.context import (
-        _configure_hooks,
-        _get_tracer_project,
-        _tracing_v2_is_enabled,
-        tracing_callback_var,
-        tracing_v2_callback_var,
-    )
 
     run_tree = None
     parent_run_id = None if run_tree is None else getattr(run_tree, "id")
@@ -1198,18 +1191,8 @@ def _configure(
         callback_manager.add_metadata(inheritable_metadata or {})
         callback_manager.add_metadata(local_metadata or {}, False)
 
-    tracer = tracing_callback_var.get()
-    tracing_enabled_ = (
-        env_var_is_set("LANGCHAIN_TRACING")
-        or tracer is not None
-        or env_var_is_set("LANGCHAIN_HANDLER")
-    )
-
-    tracer_v2 = tracing_v2_callback_var.get()
-    tracing_v2_enabled_ = _tracing_v2_is_enabled()
-    tracer_project = _get_tracer_project()
     debug = _get_debug()
-    if verbose or debug or tracing_enabled_ or tracing_v2_enabled_:
+    if verbose or debug :
         from sparkai.core.tracers.langchain import LangChainTracer
         from sparkai.core.tracers.langchain_v1 import LangChainTracerV1
         from sparkai.core.tracers.stdout import ConsoleCallbackHandler
@@ -1227,51 +1210,5 @@ def _configure(
             for handler in callback_manager.handlers
         ):
             callback_manager.add_handler(ConsoleCallbackHandler(), True)
-        if tracing_enabled_ and not any(
-            isinstance(handler, LangChainTracerV1)
-            for handler in callback_manager.handlers
-        ):
-            if tracer:
-                callback_manager.add_handler(tracer, True)
-            else:
-                handler = LangChainTracerV1()
-                handler.load_session(tracer_project)
-                callback_manager.add_handler(handler, True)
-        if tracing_v2_enabled_ and not any(
-            isinstance(handler, LangChainTracer)
-            for handler in callback_manager.handlers
-        ):
-            if tracer_v2:
-                callback_manager.add_handler(tracer_v2, True)
-            else:
-                try:
-                    handler = LangChainTracer(project_name=tracer_project)
-                    callback_manager.add_handler(handler, True)
-                except Exception as e:
-                    logger.warning(
-                        "Unable to load requested LangChainTracer."
-                        " To disable this warning,"
-                        " unset the LANGCHAIN_TRACING_V2 environment variables.",
-                        e,
-                    )
-    for var, inheritable, handler_class, env_var in _configure_hooks:
-        create_one = (
-            env_var is not None
-            and env_var_is_set(env_var)
-            and handler_class is not None
-        )
-        if var.get() is not None or create_one:
-            var_handler = var.get() or cast(Type[BaseCallbackHandler], handler_class)()
-            if handler_class is None:
-                if not any(
-                    handler is var_handler  # direct pointer comparison
-                    for handler in callback_manager.handlers
-                ):
-                    callback_manager.add_handler(var_handler, inheritable)
-            else:
-                if not any(
-                    isinstance(handler, handler_class)
-                    for handler in callback_manager.handlers
-                ):
-                    callback_manager.add_handler(var_handler, inheritable)
+
     return callback_manager

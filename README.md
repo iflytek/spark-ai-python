@@ -34,6 +34,9 @@
 - [ ] 支持 HTTP SPARK API
 - [ ] 支持大模型多模态等能力
 - [ ] Golang版本[SDK](https://github.com/iflytek/spark-ai-go/)进行中
+- [ ] 对接 [liteLLM](https://github.com/BerriAI/litellm)
+
+
 ## 安装
 
 如果你不需要源码，只需要通过 `pip `快速安装

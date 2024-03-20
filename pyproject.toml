@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "spark-ai-python"
-version = "0.3.2"
+version = "0.3.3"
 description = "a sdk for iflytek's spark LLM."
 authors = ["whybeyoung <ybyang7@iflytek.com>","mingduan <mingduan@iflytek.com>"]
 license = "MIT"
@@ -10,7 +10,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.10"
+python = ">=3.8"
 aiohttp = ">3.3"
 fastapi = {extras = ["all"], version = "^0.110.0"}
 requests = "*"
@@ -21,7 +21,6 @@ nest_asyncio = "*"
 uvicorn = ">=0.26.0"
 packaging = "*"
 tenacity = "*"
-langsmith = "*"
 jsonpatch = "*"
 
 [tool.pytest.ini_options]
