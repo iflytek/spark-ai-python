@@ -5,7 +5,7 @@
 ## 项目地址
 
 * Github: [https://github.com/iflytek/spark-ai-python](https://github.com/iflytek/spark-ai-python)
-欢迎点赞，star 
+欢迎点赞，star
 
 ## 前言
 
@@ -36,8 +36,9 @@
 - [ ] Golang版本[SDK](https://github.com/iflytek/spark-ai-go/)进行中
 - [ ] 对接 [liteLLM](https://github.com/BerriAI/litellm)
 
-
 ## 安装
+
+**项目仅支持 Python3.8+**
 
 如果你不需要源码，只需要通过 `pip `快速安装
 
