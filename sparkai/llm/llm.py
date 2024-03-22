@@ -396,6 +396,7 @@ class _SparkLLMClient:
             on_error=self.on_error,
             on_close=self.on_close,
             on_open=self.on_open,
+            header={"User-Agent": "Opensource/IFLYTEK Spark AI Python SDK V1"}
         )
         ws.function_definition = function_definition
         ws.messages = messages
