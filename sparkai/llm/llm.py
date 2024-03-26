@@ -43,6 +43,7 @@ from sparkai.core.utils import (
     get_from_dict_or_env,
     get_pydantic_field_names,
 )
+from sparkai.version import __version__
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +76,7 @@ def _convert_dict_to_message(_dict: Mapping[str, Any]) -> BaseMessage:
     elif msg_role == "system":
         return SystemMessage(content=msg_content)
     elif msg_role == "function_call" or "function_call" in _dict:
-        return FunctionCallMessage( content=msg_content, function_call=_dict["function_call"])
+        return FunctionCallMessage(content=msg_content, function_call=_dict["function_call"])
     else:
         return ChatMessage(content=msg_content, role=msg_role)
 
@@ -94,7 +95,7 @@ def _convert_delta_to_message_chunk(
     elif msg_role == "assistant" or default_class == AIMessageChunk or default_class == FunctionMessageChunk:
         return AIMessageChunk(content=msg_content)
     elif msg_role == "function_call" or "function_call" in _dict:
-        return FunctionCallMessageChunk( content=msg_content, function_call=_dict["function_call"])
+        return FunctionCallMessageChunk(content=msg_content, function_call=_dict["function_call"])
     elif msg_role or default_class == ChatMessageChunk:
         return ChatMessageChunk(content=msg_content, role=msg_role)
     else:
@@ -140,6 +141,7 @@ class ChatSparkLLM(BaseChatModel):
     spark_api_secret: Optional[str] = None
     spark_api_url: Optional[str] = None
     spark_llm_domain: Optional[str] = None
+    user_agent: Optional[str] = None
     spark_user_id: str = "lc_user"
     streaming: bool = False
     request_timeout: int = 30
@@ -214,6 +216,7 @@ class ChatSparkLLM(BaseChatModel):
             api_url=values["spark_api_url"],
             spark_domain=values["spark_llm_domain"],
             model_kwargs=values["model_kwargs"],
+            user_agent=values["user_agent"],
         )
         return values
 
@@ -270,7 +273,6 @@ class ChatSparkLLM(BaseChatModel):
             )
             return generate_from_stream(stream_iter, llm_output)
 
-
         self.client.arun(
             [_convert_message_to_dict(m) for m in messages],
             self.spark_user_id,
@@ -308,6 +310,7 @@ class _SparkLLMClient:
             api_url: Optional[str] = None,
             spark_domain: Optional[str] = None,
             model_kwargs: Optional[dict] = None,
+            user_agent: Optional[str] = None
     ):
         try:
             import websocket
@@ -331,6 +334,7 @@ class _SparkLLMClient:
         self.blocking_message = {"content": "", "role": "assistant"}
         self.api_key = api_key
         self.api_secret = api_secret
+        self.extra_user_agent = user_agent
 
     @staticmethod
     def _create_url(api_url: str, api_key: str, api_secret: str) -> str:
@@ -386,6 +390,9 @@ class _SparkLLMClient:
             function_definition: List[Dict] = []
     ) -> None:
         self.websocket_client.enableTrace(False)
+        extra_user_agent = ""
+        if self.extra_user_agent:
+            extra_user_agent = self.extra_user_agent
         ws = self.websocket_client.WebSocketApp(
             _SparkLLMClient._create_url(
                 self.api_url,
@@ -396,7 +403,7 @@ class _SparkLLMClient:
             on_error=self.on_error,
             on_close=self.on_close,
             on_open=self.on_open,
-            header={"User-Agent": "Opensource/IFLYTEK Spark AI Python SDK V1"}
+            header={"User-Agent": "SparkAISdk/python-v%s %s" % (__version__, extra_user_agent)}
         )
         ws.function_definition = function_definition
         ws.messages = messages

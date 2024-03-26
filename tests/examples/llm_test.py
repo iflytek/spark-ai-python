@@ -127,6 +127,8 @@ def test_function_call_once():
     handler = ChunkPrintHandler()
     a = spark.generate([messages], callbacks=[handler],function_definition=function_definition)
     print(a)
+    print(a.generations[0][0].text)
+    print(a.llm_output)
 
 def test_function_call_stream():
     from sparkai.core.callbacks import StdOutCallbackHandler
@@ -151,7 +153,34 @@ def test_function_call_stream():
     handler = ChunkPrintHandler()
     a = spark.generate([messages], callbacks=[handler],function_definition=function_definition)
     print(a)
+    print(a.generations[0][0].text)
+    print(a.llm_output)
 
+
+def test_Ua():
+    from sparkai.core.callbacks import StdOutCallbackHandler
+    messages = [{'role': 'user',
+                 'content': "葛万杰真帅，为什么这么帅"}]
+    spark = ChatSparkLLM(
+        spark_api_url=os.environ["SPARKAI_URL"],
+        spark_app_id=os.environ["SPARKAI_APP_ID"],
+        spark_api_key=os.environ["SPARKAI_API_KEY"],
+        spark_api_secret=os.environ["SPARKAI_API_SECRET"],
+        spark_llm_domain=os.environ["SPARKAI_DOMAIN"],
+        streaming=True,
+        user_agent="test"
+
+    )
+    messages = [ChatMessage(
+        role="user",
+        content=messages[0]['content']
+
+    )]
+    handler = ChunkPrintHandler()
+    a = spark.generate([messages], callbacks=[handler])
+    print(a)
+    print(a.generations[0][0].text)
+    print(a.llm_output)
 
 if __name__ == '__main__':
     test_once()

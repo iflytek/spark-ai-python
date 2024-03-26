@@ -206,12 +206,18 @@ def test_function_call():
     handler = ChunkPrintHandler()
     a = spark.generate([messages], callbacks=[handler],function_definition=function_definition)
     print(a)
+    print(a.generations[0][0].text) 
+    print(a.llm_output)
 ```
 得到输出
 
 ```bash
 PASSED                                   [100%]{"type": "function", "function": {"name": "multiply", "description": "乘法函数，\nArgs:\n    a: 输入a\n    b: 输入b\nReturn:\n     返回 a*b 结果", "parameters": {"type": "object", "properties": {"b": {"type": "integer"}}, "required": ["a", "b"]}}}
 generations=[[ChatGeneration(message=FunctionCallMessage(content='', function_call={'arguments': '{"a":12,"b":12}', 'name': 'multiply'}))]] llm_output={'token_usage': {'question_tokens': 9, 'prompt_tokens': 9, 'completion_tokens': 0, 'total_tokens': 9}} run=[RunInfo(run_id=UUID('95bf4e2e-6c90-41aa-9ddf-51b707d4d3c7'))]
+
+generations=[[ChatGeneration(message=FunctionCallMessage(content='', function_call={'arguments': '{"a":12,"b":12}', 'name': 'operator_multiply'}))]] llm_output={'token_usage': {'question_tokens': 9, 'prompt_tokens': 9, 'completion_tokens': 0, 'total_tokens': 9}} run=[RunInfo(run_id=UUID('64bb65bd-948b-4354-bb72-e6847cc0a21b'))]
+
+{'token_usage': {'question_tokens': 9, 'prompt_tokens': 9, 'completion_tokens': 0, 'total_tokens': 9}}
 
 ```
 
