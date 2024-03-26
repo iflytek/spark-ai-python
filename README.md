@@ -257,6 +257,11 @@ INFO:     Uvicorn running on http://0.0.0.0:8008 (Press CTRL+C to quit)
 
 * wss://spark-api.xf-yun.com/v3.5/chat
 
+
+## 🌟 Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=iflytek/spark-ai-python&type=Date)](https://star-history.com/#iflytek/spark-ai-python&Date)
+
 ## 致谢
 
 * [Langchain Community](https://github.com/hwchase17/langchain)
