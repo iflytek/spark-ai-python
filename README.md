@@ -286,6 +286,9 @@ class XXXX:
         print(response)
         #display(Markdown(f"<b>{response}</b>"))
 ```
+示例结果如下:
+
+![img](tests/examples/spark_llama_index.png)
 
 ## 欢迎贡献
 
