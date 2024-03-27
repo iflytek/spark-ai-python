@@ -154,6 +154,7 @@ def test_function_call_stream():
     a = spark.generate([messages], callbacks=[handler],function_definition=function_definition)
     print(a)
     print(a.generations[0][0].text)
+    print([a.generations[0][0].message])
     print(a.llm_output)
 
 
