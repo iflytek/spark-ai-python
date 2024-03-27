@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "spark-ai-python"
-version = "0.3.5"
+version = "0.3.6"
 description = "a sdk for iflytek's spark LLM."
-authors = ["whybeyoung <ybyang7@iflytek.com>","mingduan <mingduan@iflytek.com>"]
+authors = ["whybeyoung <ybyang7@iflytek.com>", "mingduan <mingduan@iflytek.com>"]
 license = "MIT"
 readme = "README.md"
 packages = [
@@ -10,9 +10,9 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.8"
+python = ">=3.8.1,<4.0"
 aiohttp = ">3.3"
-fastapi = {extras = ["all"], version = "^0.110.0"}
+fastapi = { extras = ["all"], version = "^0.110.0" }
 requests = "*"
 nest-asyncio = "^1.6.0"
 websocket-client = "^1.7.0"
@@ -23,11 +23,17 @@ packaging = "*"
 tenacity = "*"
 jsonpatch = "*"
 
+[tool.poetry.extras]
+llam_index = [
+    "llama-index-core"
+]
+
 [tool.pytest.ini_options]
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
 [[tool.poetry.source]]
 name = "my-custom-repo"  # This name will be used in the configuration to retreive the proper credentials
 url = "https://repo.model.xfyun.cn/api/packages/administrator/pypi"  # URL used to download your packages from
