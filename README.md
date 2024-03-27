@@ -36,6 +36,10 @@
 - [ ] Golang版本[SDK](https://github.com/iflytek/spark-ai-go/)进行中
 - [ ] 对接 [liteLLM](https://github.com/BerriAI/litellm)
 
+## 生态对接
+
+- [x] 支持LLamaIndex,详细用建 [](#LLamaIndex Support)
+
 ## 安装
 
 **项目仅支持 Python3.8+**
@@ -242,6 +246,46 @@ INFO:     Uvicorn running on http://0.0.0.0:8008 (Press CTRL+C to quit)
 
 * open_api_key: 配置格式key为: ```key&secret&appid"``` 格式的key
 * openai_base_url: 你本地 ip:8008端口
+
+
+## 生态支持
+
+### LLamaIndex Support
+```python
+### 省略其他代码
+
+import os
+## 引入星火spark-ai -python 
+from sparkai.frameworks.llama_index import SparkAI
+
+from llama_index.core import SimpleDirectoryReader, StorageContext, VectorStoreIndex, Settings
+from llama_index.core.embeddings import resolve_embed_model
+from llama_index.vector_stores.chroma import ChromaVectorStore
+
+class XXXX:
+    def query(self,q):
+        # Query Data
+        chroma_collection = self.chroma_client.get_or_create_collection("quickstart")
+        vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+
+        index = VectorStoreIndex.from_vector_store(
+            vector_store,
+            embed_model=self.embed_model,
+        )
+        sparkai = SparkAI(
+            spark_api_url=os.environ["SPARKAI_URL"],
+            spark_app_id=os.environ["SPARKAI_APP_ID"],
+            spark_api_key=os.environ["SPARKAI_API_KEY"],
+            spark_api_secret=os.environ["SPARKAI_API_SECRET"],
+            spark_llm_domain=os.environ["SPARKAI_DOMAIN"],
+            streaming=False,
+        )
+        # Query Data from the persisted index
+        query_engine = index.as_query_engine(llm=sparkai,similarity_top_k=4)
+        response = query_engine.query(q)
+        print(response)
+        #display(Markdown(f"<b>{response}</b>"))
+```
 
 ## 欢迎贡献
 
