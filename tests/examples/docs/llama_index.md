@@ -94,6 +94,15 @@ INFO:     [27-03-2024 16:43:25] Uvicorn running on http://localhost:8000 (Press 
 
 ***chroma 执行目录当前会有一个 chroma_data 数据目录，里面的sqlite持久化存储了客户的存的向量数据***
 
+##### Embedding模型准备
+
+
+```bash
+export HF_ENDPOINT=https://hf-mirror.com
+huggingface-cli download --resume-download   BAAI/bge-m3 --local-dir-use-symlinks False  --local-dir BAAI/bge-m3     --
+exclude  pytorch_model.bin 
+```
+
 ##### 向量库客户端
 
 接下来我们开始建立索引，也就是把本地文档向量化并持久化到chromadb
@@ -131,9 +140,11 @@ class XX:
 ```
 
 这里Settings的两个配置是用于配置文档分块大小和可重叠token大小。
+
 详细解释如下:
 
 chunk_size: 对输入文本序列进行切分的最大长度。大语言模型一般会限制最大输入序列长度,比如GPT-3的最大输入长度是2048个token。为了处理更长的文本,需要切分成多个chunk,chunk_size控制每个chunk的最大长度。
+
 chunk_overlap: 相邻两个chunk之间的重叠token数量。为了保证文本语义的连贯性,相邻chunk会有一定的重叠。chunk_overlap控制这个重叠区域的大小。
 
 reader 使用了`SimpleDirectoryReader` 来做一个并行的文档加载，并且子目录递归循环。
