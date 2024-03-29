@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "spark-ai-python"
-version = "0.3.8"
+version = "0.3.9"
 description = "a sdk for iflytek's spark LLM."
 authors = ["whybeyoung <ybyang7@iflytek.com>", "mingduan <mingduan@iflytek.com>"]
 license = "MIT"
@@ -22,12 +22,16 @@ packaging = "*"
 tenacity = "*"
 jsonpatch = "*"
 llama-index-core = { version = "^0.10.24.post1", optional = true }
+pyautogen = { version = ">=0.2.20", optional = true }
 uvicorn = { version = ">=0.26.0", optional = true }
 fastapi = { extras = ["all"], version = "^0.110.0", optional = true}
 
 [tool.poetry.extras]
 llama_index = [
     "llama-index-core"
+]
+autogen = [
+    "pyautogen"
 ]
 proxy = [
     "fastapi",
