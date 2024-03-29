@@ -38,8 +38,8 @@
 
 ## 生态对接
 
-- [x] 支持LLamaIndex,详细用法请参考 [](#LLamaIndex Support)
-- [x] 支持AutoGen,详细用法请参考 [](#AutoGen Support)
+- [x] 支持LLamaIndex,详细用法请参考 [LLamIndex Support](#llama_index)
+- [x] 支持AutoGen,详细用法请参考 [AutoGen Support](#autogen)
 
 ## 安装
 
@@ -251,7 +251,7 @@ INFO:     Uvicorn running on http://0.0.0.0:8008 (Press CTRL+C to quit)
 
 ## 生态支持
 
-### LLamaIndex Support
+<h3 id="llama_index">LLamaIndex Support</h3>
 ```python
 ### 省略其他代码
 
@@ -291,7 +291,8 @@ class XXXX:
 
 ![img](tests/examples/spark_llama_index.png)
 
-### AutoGen Support
+<h3 id="autogen">AutoGen Support</h3>
+
 微软出品的[AutoGen](https://github.com/microsoft/autogen)是业界出名的多Agent智能体框架。
 通过几行Import即可让autogen原生支持[【星火大模型】](https://github.com/microsoft/autogen)
 
