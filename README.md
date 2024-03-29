@@ -38,7 +38,8 @@
 
 ## 生态对接
 
-- [x] 支持LLamaIndex,详细用建 [](#LLamaIndex Support)
+- [x] 支持LLamaIndex,详细用法请参考 [](#LLamaIndex Support)
+- [x] 支持AutoGen,详细用法请参考 [](#AutoGen Support)
 
 ## 安装
 
@@ -289,6 +290,59 @@ class XXXX:
 示例结果如下:
 
 ![img](tests/examples/spark_llama_index.png)
+
+### AutoGen Support
+微软出品的[AutoGen](https://github.com/microsoft/autogen)是业界出名的多Agent智能体框架。
+通过几行Import即可让autogen原生支持[【星火大模型】](https://github.com/microsoft/autogen)
+
+```python
+from sparkai.frameworks.autogen import SparkAI
+import autogen
+from autogen.agentchat.contrib.retrieve_assistant_agent import RetrieveAssistantAgent
+
+spark_config = autogen.config_list_from_json(
+    "sparkai_autogen.json",
+    filter_dict={"model_client_cls": ["SparkAI"]},
+)
+llm_config = {
+    "timeout": 600,
+    "cache_seed": None,  # change the seed for different trials
+    "config_list": spark_config,
+    "temperature": 0,
+}
+
+# 1. create an RetrieveAssistantAgent instance named "assistant"
+assistant = RetrieveAssistantAgent(
+    name="assistant",
+    system_message="You are a helpful assistant.",
+    llm_config=llm_config
+)
+# 注册SparkAI类进入 agent
+assistant.register_model_client(model_client_cls=SparkAI)
+
+```
+其中`sparkai_autogen.json`内容如下:
+
+***其中星火的domain对应 下面配置model***
+
+```json
+[
+  {
+    "api_key": "<spark_api_key>&<spark_api_secret>&<spark_app_id>",
+    "base_url": "wss://spark-api.xf-yun.com/v3.5/chat",
+    "model_client_cls": "SparkAI",
+    "model": "generalv3.5", 
+    "stream": true,
+    "params": {
+      "request_timeout": 61
+    }
+  }
+]
+
+
+```
+
+
 
 ## 欢迎贡献
 
