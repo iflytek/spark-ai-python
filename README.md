@@ -22,24 +22,27 @@
 
 ***感谢社区(Langchain项目以及SparkLLM部分committer)[项目正在开发中]***
 
+
+## 新特性！！👉👉👉生态对接
+
+- [x] 支持LLamaIndex,详细用法请参考 [LLamIndex Support](#llama_index)
+- [x] 支持AutoGen,详细用法请参考 [AutoGen Support](#autogen)
+
 ## 近期规划新特性[待演进]
 
+- [x] 开源框架AutoGPT/AutoGen/MetaGpt/Langchain/PromptFlow/.... 快速集成星火示例
 - [x] 极简的接入,快速调用讯飞星火大模型
 - [x] 已发布pypi [国内源均可安装]
 - [x] 本地代理方式星火SparkAPI转OpenAI接口(让你快速在开源agent框架集成星火大模型)
 - [ ] SDK方式适配OpenAI接口 ChatCompletion接口 
 - [ ] SDK方式适配OpenAI Embedding接口
-- [ ] 开源框架AutoGPT/AutoGen/MetaGpt/Langchain/PromptFlow/.... 快速集成星火示例
 - [ ] 无缝对接[讯飞Maas平台](https://training.xfyun.cn/)微调训练托管的大模型API
 - [ ] 支持 HTTP SPARK API
 - [ ] 支持大模型多模态等能力
 - [ ] Golang版本[SDK](https://github.com/iflytek/spark-ai-go/)进行中
 - [ ] 对接 [liteLLM](https://github.com/BerriAI/litellm)
 
-## 生态对接
 
-- [x] 支持LLamaIndex,详细用法请参考 [LLamIndex Support](#llama_index)
-- [x] 支持AutoGen,详细用法请参考 [AutoGen Support](#autogen)
 
 ## 安装
 
