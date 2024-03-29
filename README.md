@@ -255,9 +255,9 @@ INFO:     Uvicorn running on http://0.0.0.0:8008 (Press CTRL+C to quit)
 ## 生态支持
 
 <h3 id="llama_index">LLamaIndex Support</h3>
+
 ```python
 ### 省略其他代码
-
 import os
 ## 引入星火spark-ai -python 
 from sparkai.frameworks.llama_index import SparkAI
@@ -290,9 +290,11 @@ class XXXX:
         print(response)
         #display(Markdown(f"<b>{response}</b>"))
 ```
+
 示例结果如下:
 
 ![img](tests/examples/spark_llama_index.png)
+
 
 <h3 id="autogen">AutoGen Support</h3>
 
