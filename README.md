@@ -251,6 +251,8 @@ INFO:     Uvicorn running on http://0.0.0.0:8008 (Press CTRL+C to quit)
 * open_api_key: 配置格式key为: ```key&secret&appid"``` 格式的key
 * openai_base_url: 你本地 ip:8008端口
 
+具体操作流程参见[本地代理方式星火SparkAPI转OpenAI接口 ](tests/examples/docs/proxy_open_ai.md)
+
 
 ## 生态支持
 
