@@ -47,17 +47,27 @@ from sparkai.version import __version__
 
 from sparkai.log.logger import logger
 
+def convert_message_to_dict(messages: List[BaseMessage]) -> List[dict]:
+    new=[]
+    for i, message in enumerate(messages):
+        new.append(_convert_message_to_dict(i, message))
+    return new
 
-def _convert_message_to_dict(message: BaseMessage) -> dict:
+def _convert_message_to_dict(index:int, message: BaseMessage) -> dict:
 
     if isinstance(message, ChatMessage):
+        if message.role == "system" and index != 0:
+            message.role = "user"
         message_dict = {"role": message.role, "content": message.content}
     elif isinstance(message, HumanMessage):
         message_dict = {"role": "user", "content": message.content}
     elif isinstance(message, AIMessage):
         message_dict = {"role": "assistant", "content": message.content}
     elif isinstance(message, SystemMessage):
-        message_dict = {"role": "system", "content": message.content}
+        role = "system"
+        if index != 0:
+            role = "user"
+        message_dict = {"role": role, "content": message.content}
     else:
         raise ValueError(f"Got unknown type {message}")
 
@@ -233,8 +243,10 @@ class ChatSparkLLM(BaseChatModel):
         if "function_definition" in kwargs:
             function_definition = kwargs['function_definition']
 
+        converted_messages = convert_message_to_dict(messages)
+
         self.client.arun(
-            [_convert_message_to_dict(m) for m in messages],
+            converted_messages,
             self.spark_user_id,
             self.model_kwargs,
             self.streaming,
@@ -274,8 +286,9 @@ class ChatSparkLLM(BaseChatModel):
             )
             return generate_from_stream(stream_iter, llm_output)
 
+        converted_messages = convert_message_to_dict(messages)
         self.client.arun(
-            [_convert_message_to_dict(m) for m in messages],
+            converted_messages,
             self.spark_user_id,
             self.model_kwargs,
             False,
