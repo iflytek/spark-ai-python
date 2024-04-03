@@ -349,7 +349,13 @@ assistant.register_model_client(model_client_cls=SparkAI)
 
 
 ```
+### 调试模式
 
+设置日志级别:
+```python
+from sparkai.log.logger import logger
+logger.setLevel("debug")
+```
 
 
 ## 欢迎贡献

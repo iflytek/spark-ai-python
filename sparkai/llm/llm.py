@@ -45,7 +45,7 @@ from sparkai.core.utils import (
 )
 from sparkai.version import __version__
 
-logger = logging.getLogger(__name__)
+from sparkai.log.logger import logger
 
 
 def _convert_message_to_dict(message: BaseMessage) -> dict:
@@ -461,9 +461,10 @@ class _SparkLLMClient:
     def on_message(self, ws: Any, message: str) -> None:
         data = json.loads(message)
         code = data["header"]["code"]
+        logger.debug(f"sid: {data['header']['sid']}, code: {code}")
         if code != 0:
             self.queue.put(
-                {"error": f"Code: {code}, Error: {data['header']['message']}"}
+                {"sid: {data['header']['sid']}, error": f"Code: {code}, Error: {data['header']['message']}"}
             )
             ws.close()
         else:
