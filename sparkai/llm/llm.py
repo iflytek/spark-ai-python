@@ -49,8 +49,9 @@ from sparkai.log.logger import logger
 
 
 def _convert_message_to_dict(message: BaseMessage) -> dict:
+
     if isinstance(message, ChatMessage):
-        message_dict = {"role": "user", "content": message.content}
+        message_dict = {"role": message.role, "content": message.content}
     elif isinstance(message, HumanMessage):
         message_dict = {"role": "user", "content": message.content}
     elif isinstance(message, AIMessage):
