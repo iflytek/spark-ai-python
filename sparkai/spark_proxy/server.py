@@ -25,6 +25,7 @@ async def chat_endpoint(authorization: Annotated[str | None, Header()] = None, c
             temperature=chat_input.temperature,
             model=chat_input.model
         )
+        print(chat_input.messages)
         finish_reason = "stop"
         if response_message.function_call is not None:
             finish_reason = "function_call"  # need to add this to follow the format of openAI function calling
@@ -35,6 +36,8 @@ async def chat_endpoint(authorization: Annotated[str | None, Header()] = None, c
         return result.dict(exclude_none=True)
 
     else:
+        print(chat_input.messages)
+
         response_generator = generate_stream(
             key=key,
             messages=chat_input.messages,
