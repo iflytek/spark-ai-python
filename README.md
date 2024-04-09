@@ -75,7 +75,7 @@ python setup.py install
   * api_secret
 
 * URL/Domain配置请查看[doc](https://www.xfyun.cn/doc/spark/Web.html#_1-%E6%8E%A5%E5%8F%A3%E8%AF%B4%E6%98%8E)
-* 运行测试脚本需要提前将 `.env.example` 拷贝为 `.env`并配置其中变量
+* 运行测试脚本需要提前将 [.env.example](.env.example) 拷贝为 `.env`并配置其中变量
 
 ### 一次性返回结果(非流式)
 
