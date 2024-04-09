@@ -17,6 +17,7 @@ nest-asyncio = "^1.6.0"
 websocket-client = "^1.7.0"
 websockets = "*"
 nest_asyncio = "*"
+python-dotenv = "*"
 
 packaging = "*"
 tenacity = "*"
