@@ -95,9 +95,6 @@ load_dotenv()
 
 if __name__ == '__main__':
     from sparkai.core.callbacks import StdOutCallbackHandler
-    messages = [{'role': 'user',
-                 'content': '你好呀'}]
-
     spark = ChatSparkLLM(
         spark_api_url=os.environ["SPARKAI_URL"],
         spark_app_id=os.environ["SPARKAI_APP_ID"],
@@ -108,8 +105,7 @@ if __name__ == '__main__':
     )
     messages = [ChatMessage(
         role="user",
-        content=messages[0]['content']
-
+        content='你好呀'
     )]
     handler = ChunkPrintHandler()
     a = spark.generate([messages], callbacks=[handler])
