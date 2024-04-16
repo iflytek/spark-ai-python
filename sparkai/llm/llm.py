@@ -47,14 +47,15 @@ from sparkai.version import __version__
 
 from sparkai.log.logger import logger
 
+
 def convert_message_to_dict(messages: List[BaseMessage]) -> List[dict]:
-    new=[]
+    new = []
     for i, message in enumerate(messages):
         new.append(_convert_message_to_dict(i, message))
     return new
 
-def _convert_message_to_dict(index:int, message: BaseMessage) -> dict:
 
+def _convert_message_to_dict(index: int, message: BaseMessage) -> dict:
     if isinstance(message, ChatMessage):
         if message.role == "system" and index != 0:
             message.role = "user"
@@ -75,8 +76,8 @@ def _convert_message_to_dict(index:int, message: BaseMessage) -> dict:
 
 
 def _convert_dict_to_message(_dict: Mapping[str, Any]) -> BaseMessage:
-    msg_role = _dict["role"]
-    msg_content = _dict["content"]
+    msg_role = _dict.get("role")
+    msg_content = _dict.get("content")
     if "function_call" in _dict:
         msg_role = "function_call"
     if msg_role == "user":
@@ -88,6 +89,7 @@ def _convert_dict_to_message(_dict: Mapping[str, Any]) -> BaseMessage:
         return SystemMessage(content=msg_content)
     elif msg_role == "function_call" or "function_call" in _dict:
         return FunctionCallMessage(content=msg_content, function_call=_dict["function_call"])
+
     else:
         return ChatMessage(content=msg_content, role=msg_role)
 
@@ -301,6 +303,8 @@ class ChatSparkLLM(BaseChatModel):
             if "data" not in content:
                 continue
             completion = content["data"]
+        if not completion:
+            logger.error("No completion Generate")
         message = _convert_dict_to_message(completion)
         generations = [ChatGeneration(message=message)]
         return ChatResult(generations=generations, llm_output=llm_output)
@@ -528,9 +532,10 @@ class _SparkLLMClient:
             try:
                 content = self.queue.get(timeout=timeout)
             except queue.Empty as _:
-                raise TimeoutError(
+                logger.error(TimeoutError(
                     f"SparkLLMClient wait LLM api response timeout {timeout} seconds"
-                )
+                ))
+                continue
             if "error" in content:
                 raise ConnectionError(content["error"])
             if "usage" in content:

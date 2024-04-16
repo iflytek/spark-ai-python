@@ -136,6 +136,7 @@ def test_stream():
         spark_api_key=os.environ["SPARKAI_API_KEY"],
         spark_api_secret=os.environ["SPARKAI_API_SECRET"],
         spark_llm_domain=os.environ["SPARKAI_DOMAIN"],
+        request_timeout=30, # 
         streaming=True,
 
     )
