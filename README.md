@@ -56,6 +56,11 @@ pip install --upgrade spark_ai_python
 国内使用:
 ```bash
 pip install -i https://pypi.tuna.tsinghua.edu.cn/simple spark_ai_python
+
+如果清华源版本不可用,请使用一下命令升级到最新版本:
+
+pip install -i  https://repo.model.xfyun.cn/api/packages/administrator/pypi/simple  spark_ai_python --upgrade
+
 ```
 
 Install from source with:
