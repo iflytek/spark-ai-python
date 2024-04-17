@@ -27,13 +27,14 @@
 
 - [x] 支持LLamaIndex,详细用法请参考 [LLamIndex Support](#llama_index)
 - [x] 支持AutoGen,详细用法请参考 [AutoGen Support](#autogen)
+- [ ] 支持星火图片理解大模型,详细用法请参考 [ImageUnderstanding Support](#imageunderstanding)
 
 ## 近期规划新特性[待演进]
 
 - [x] 开源框架AutoGPT/AutoGen/MetaGpt/Langchain/PromptFlow/.... 快速集成星火示例
 - [x] 极简的接入,快速调用讯飞星火大模型
 - [x] 已发布pypi [国内源均可安装]
-- [x] 本地代理方式星火SparkAPI转OpenAI接口(让你快速在开源agent框架集成星火大模型)
+- [x] 本地代理方式星火SparkAPI转OpenAI接口(让你快速在开源agent框架集成星火大模型) 
 - [ ] SDK方式适配OpenAI接口 ChatCompletion接口 
 - [ ] SDK方式适配OpenAI Embedding接口
 - [ ] 无缝对接[讯飞Maas平台](https://training.xfyun.cn/)微调训练托管的大模型API
@@ -178,6 +179,8 @@ class ChunkPrintHandler(BaseCallbackHandler):
 比如将 mulitply 乘法函数定义传入 ChatSparkLLM
 
 ```python
+from sparkai.core.utils.function_calling import convert_to_openai_tool
+
 def multiply(a,b :int) -> int:
     """乘法函数，
     Args:
@@ -347,6 +350,38 @@ assistant.register_model_client(model_client_cls=SparkAI)
 
 
 ```
+
+
+<h3 id="imageunderstanding">ImageUnderstanding Support</h3>
+支持讯飞星火[图片理解](https://www.xfyun.cn/doc/spark/ImageUnderstanding.html#%E8%AF%B7%E6%B1%82%E5%8F%82%E6%95%B0)大模型:
+
+```python
+    import base64
+    image_content = base64.b64encode(open("spark_llama_index.png",'rb').read())
+
+    spark = ChatSparkLLM(
+        spark_app_id=os.environ["SPARKAI_APP_ID"],
+        spark_api_key=os.environ["SPARKAI_API_KEY"],
+        spark_api_secret=os.environ["SPARKAI_API_SECRET"],
+        spark_llm_domain="image",
+        streaming=False,
+        user_agent="test"
+
+    )
+    messages = [ImageChatMessage(
+        role="user",
+        content=image_content,
+        content_type="image"
+    ),ImageChatMessage(
+        role="user",
+        content="这是什么图",
+        content_type="text"
+    )]
+    handler = ChunkPrintHandler()
+    a = spark.generate([messages], callbacks=[])
+```
+
+
 ### 调试模式
 
 设置日志级别:

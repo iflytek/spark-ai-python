@@ -24,6 +24,8 @@ from sparkai.core.messages import (
     AIMessageChunk,
     BaseMessage,
     BaseMessageChunk,
+    ImageChatMessage,
+    ImageChatMessageChunk,
     ChatMessage,
     ChatMessageChunk,
     HumanMessage,
@@ -47,6 +49,8 @@ from sparkai.version import __version__
 
 from sparkai.log.logger import logger
 
+DefaultDomain = "generalv3.5"
+
 
 def convert_message_to_dict(messages: List[BaseMessage]) -> List[dict]:
     new = []
@@ -60,6 +64,8 @@ def _convert_message_to_dict(index: int, message: BaseMessage) -> dict:
         if message.role == "system" and index != 0:
             message.role = "user"
         message_dict = {"role": message.role, "content": message.content}
+    elif isinstance(message, ImageChatMessage):
+        message_dict = {"role": "user", "content": message.content, "content_type": message.content_type}
     elif isinstance(message, HumanMessage):
         message_dict = {"role": "user", "content": message.content}
     elif isinstance(message, AIMessage):
@@ -305,6 +311,7 @@ class ChatSparkLLM(BaseChatModel):
             completion = content["data"]
         if not completion:
             logger.error("No completion Generate")
+            return ChatResult(generations=[], llm_output={})
         message = _convert_dict_to_message(completion)
         generations = [ChatGeneration(message=message)]
         return ChatResult(generations=generations, llm_output=llm_output)
@@ -339,20 +346,47 @@ class _SparkLLMClient:
                 "Could not import websocket client python package. "
                 "Please install it with `pip install websocket-client`."
             )
+        self.spark_domain = spark_domain or DefaultDomain
 
-        self.api_url = (
-            "wss://spark-api.xf-yun.com/v3.5/chat" if not api_url else api_url
-        )
+        if api_url is None or api_url == "":
+            self.api_url = self._adjust_api_by_domain("", spark_domain)
+        else:
+            self.api_url = self._adjust_api_by_domain(api_url, spark_domain)
+
         self.app_id = app_id
         self.api_key = api_key
         self.api_secret = api_secret
         self.model_kwargs = model_kwargs
-        self.spark_domain = spark_domain or "generalv3"
         self.queue: Queue[Dict] = Queue()
         self.blocking_message = {"content": "", "role": "assistant"}
         self.api_key = api_key
         self.api_secret = api_secret
         self.extra_user_agent = user_agent
+
+    def _adjust_api_by_domain(self, url: str, domain: str) -> str:
+        """
+        Adjust the api base according the domain provided
+        :param domain:
+        :return:
+        """
+        host_map = {
+            "generalv3.5": "wss://spark-api.xf-yun.com/v3.5/chat",
+            "generalv3": "wss://spark-api.xf-yun.com/v3.1/chat",
+            "generalv2": "wss://spark-api.xf-yun.com/v2.1/chat",
+            "general": "wss://spark-api.xf-yun.com/v1.1/chat",
+            "image": "wss://spark-api.cn-huabei-1.xf-yun.com/v2.1/image",
+        }
+        if domain == "":
+            domain = DefaultDomain
+
+        if domain not in host_map:
+            domain = DefaultDomain
+            logger.warning("not find the  domain, using default domain: %s", domain)
+
+        if url != "" and url != host_map[domain]:
+            logger.warning("specified host not match the domain default host, using default domain: %s", domain)
+
+        return host_map[domain]
 
     @staticmethod
     def _create_url(api_url: str, api_key: str, api_secret: str) -> str:
@@ -482,7 +516,7 @@ class _SparkLLMClient:
         logger.debug(f"sid: {data['header']['sid']}, code: {code}")
         if code != 0:
             self.queue.put(
-                {"sid: {data['header']['sid']}, error": f"Code: {code}, Error: {data['header']['message']}"}
+                {"error": f"Error Code: {code}, Error: {data['header']['message']}"}
             )
             ws.close()
         else:
@@ -528,16 +562,25 @@ class _SparkLLMClient:
         return data
 
     def subscribe(self, timeout: Optional[int] = 30) -> Generator[Dict, None, None]:
+        err_cnt = 0
         while True:
             try:
                 content = self.queue.get(timeout=timeout)
             except queue.Empty as _:
-                logger.error(TimeoutError(
+                e = TimeoutError(
                     f"SparkLLMClient wait LLM api response timeout {timeout} seconds"
-                ))
-                continue
+                )
+                logger.error(e)
+                err_cnt += 1
+                if err_cnt >= 4:
+                    raise e
+                else:
+                    continue
             if "error" in content:
-                raise ConnectionError(content["error"])
+                e = ConnectionError(content["error"])
+                err_cnt += 1
+                raise e
+
             if "usage" in content:
                 yield content
                 continue

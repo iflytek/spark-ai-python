@@ -13,9 +13,10 @@ from sparkai.core.messages.function import FunctionMessage, FunctionMessageChunk
 from sparkai.core.messages.human import HumanMessage, HumanMessageChunk
 from sparkai.core.messages.system import SystemMessage, SystemMessageChunk
 from sparkai.core.messages.tool import ToolMessage, ToolMessageChunk
+from sparkai.core.messages.image_chat import ImageChatMessage, ImageChatMessageChunk
 
 AnyMessage = Union[
-    AIMessage, HumanMessage, ChatMessage, SystemMessage, FunctionMessage, ToolMessage
+    AIMessage, HumanMessage, ChatMessage,ImageChatMessage, SystemMessage, FunctionMessage, ToolMessage
 ]
 
 
@@ -80,6 +81,8 @@ def _message_from_dict(message: dict) -> BaseMessage:
         return SystemMessage(**message["data"])
     elif _type == "chat":
         return ChatMessage(**message["data"])
+    elif _type == "image_chat":
+        return ImageChatMessage(**message["data"])
     elif _type == "function":
         return FunctionMessage(**message["data"])
     elif _type == "function_call":
