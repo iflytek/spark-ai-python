@@ -2,7 +2,7 @@
 
 
 <!-- markdownlint-disable MD033 -->
-
+<span class="badge-placeholder">[![Stars](https://img.shields.io/github/stars/iflytek/spark-ai-python)](https://img.shields.io/github/forks/iflytek/spark-ai-python)</span>
 <span class="badge-placeholder">[![Forks](https://img.shields.io/github/forks/iflytek/spark-ai-python)](https://img.shields.io/github/forks/iflytek/spark-ai-python)</span>
 <span class="badge-placeholder">[![GitHub release](https://img.shields.io/github/v/release/iflytek/spark-ai-python)](https://github.com/iflytek/spark-ai-python/releases/latest)</span>
 <span class="badge-placeholder">[![GitHub contributors](https://img.shields.io/github/contributors/xfyun/AthenaServing)](https://github.com/xfyun/AthenaServing/graphs/contributors)</span>
@@ -16,7 +16,6 @@
 
 * Github: [https://github.com/iflytek/spark-ai-python](https://github.com/iflytek/spark-ai-python) 欢迎点赞 [Star]()
 
-<iframe src="https://ghbtns.com/github-btn.html?user=iflytek&repo=spark-ai-python&type=star&count=true&size=large" frameborder="0" scrolling="0" width="170" height="30" title="GitHub"></iframe>
 
 ## 前言
 
