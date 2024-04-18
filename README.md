@@ -1,11 +1,27 @@
 # 讯飞星火大模型接入库 (spark-ai-python)
 
+
+<!-- markdownlint-disable MD033 -->
+
+<span class="badge-placeholder">[![Forks](https://img.shields.io/github/forks/iflytek/spark-ai-python)](https://img.shields.io/github/forks/iflytek/spark-ai-python)</span>
+<span class="badge-placeholder">[![GitHub release](https://img.shields.io/github/v/release/iflytek/spark-ai-python)](https://github.com/iflytek/spark-ai-python/releases/latest)</span>
+<span class="badge-placeholder">[![GitHub contributors](https://img.shields.io/github/contributors/xfyun/AthenaServing)](https://github.com/xfyun/AthenaServing/graphs/contributors)</span>
+<span class="badge-placeholder">[![License: Apache2.0](https://img.shields.io/github/license/iflytek/spark-ai-python)](https://github.com/iflytek/aiges/blob/master/LICENSE)</span>
+
+<script async defer src="https://buttons.github.io/buttons.js"></script>
+
+
 本Python SDK库帮助用户更快体验讯飞星火大模型
+
 
 ## 项目地址
 
 * Github: [https://github.com/iflytek/spark-ai-python](https://github.com/iflytek/spark-ai-python)
-欢迎点赞，star
+
+* 欢迎点赞
+
+<a class="github-button" href="https://github.com/iflytek/spark-ai-python" data-color-scheme="no-preference: dark; light: light; dark: dark_dimmed;" data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star iflytek/spark-ai-cli on GitHub">Star</a>
+
 
 ## 前言
 
@@ -393,6 +409,7 @@ a = spark.generate([messages], callbacks=[])
 from sparkai.log.logger import logger
 logger.setLevel("debug")
 ```
+
 
 
 ## 欢迎贡献
