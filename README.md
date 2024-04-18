@@ -8,20 +8,15 @@
 <span class="badge-placeholder">[![GitHub contributors](https://img.shields.io/github/contributors/xfyun/AthenaServing)](https://github.com/xfyun/AthenaServing/graphs/contributors)</span>
 <span class="badge-placeholder">[![License: Apache2.0](https://img.shields.io/github/license/iflytek/spark-ai-python)](https://github.com/iflytek/aiges/blob/master/LICENSE)</span>
 
-<script async defer src="https://buttons.github.io/buttons.js"></script>
-
 
 本Python SDK库帮助用户更快体验讯飞星火大模型
 
 
 ## 项目地址
 
-* Github: [https://github.com/iflytek/spark-ai-python](https://github.com/iflytek/spark-ai-python)
+* Github: [https://github.com/iflytek/spark-ai-python](https://github.com/iflytek/spark-ai-python) 欢迎点赞 [Star]()
 
-* 欢迎点赞
-
-<a class="github-button" href="https://github.com/iflytek/spark-ai-python" data-color-scheme="no-preference: dark; light: light; dark: dark_dimmed;" data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star iflytek/spark-ai-cli on GitHub">Star</a>
-
+<iframe src="https://ghbtns.com/github-btn.html?user=iflytek&repo=spark-ai-python&type=star&count=true&size=large" frameborder="0" scrolling="0" width="170" height="30" title="GitHub"></iframe>
 
 ## 前言
 
