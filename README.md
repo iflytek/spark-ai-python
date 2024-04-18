@@ -353,7 +353,9 @@ assistant.register_model_client(model_client_cls=SparkAI)
 
 
 <h3 id="imageunderstanding">ImageUnderstanding Support</h3>
-支持讯飞星火[图片理解](https://www.xfyun.cn/doc/spark/ImageUnderstanding.html#%E8%AF%B7%E6%B1%82%E5%8F%82%E6%95%B0)大模型:
+
+支持讯飞星火 [图片理解](https://www.xfyun.cn/doc/spark/ImageUnderstanding.html#%E8%AF%B7%E6%B1%82%E5%8F%82%E6%95%B0)
+大模型:
 
 ```python
 import base64
