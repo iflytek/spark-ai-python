@@ -39,7 +39,7 @@
 - [ ] SDK方式适配OpenAI Embedding接口
 - [ ] 无缝对接[讯飞Maas平台](https://training.xfyun.cn/)微调训练托管的大模型API
 - [ ] 支持 HTTP SPARK API
-- [ ] 支持大模型多模态等能力
+- [x] 支持大模型多模态等能力 (目前已支持图片理解大模型)
 - [ ] Golang版本[SDK](https://github.com/iflytek/spark-ai-go/)进行中
 - [ ] 对接 [liteLLM](https://github.com/BerriAI/litellm)
 
