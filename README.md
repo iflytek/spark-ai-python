@@ -27,7 +27,7 @@
 
 - [x] 支持LLamaIndex,详细用法请参考 [LLamIndex Support](#llama_index)
 - [x] 支持AutoGen,详细用法请参考 [AutoGen Support](#autogen)
-- [ ] 支持星火图片理解大模型,详细用法请参考 [ImageUnderstanding Support](#imageunderstanding)
+- [x] 支持星火图片理解大模型,详细用法请参考 [ImageUnderstanding Support](#imageunderstanding)
 
 ## 近期规划新特性[待演进]
 
