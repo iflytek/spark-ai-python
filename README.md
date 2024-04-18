@@ -356,29 +356,29 @@ assistant.register_model_client(model_client_cls=SparkAI)
 支持讯飞星火[图片理解](https://www.xfyun.cn/doc/spark/ImageUnderstanding.html#%E8%AF%B7%E6%B1%82%E5%8F%82%E6%95%B0)大模型:
 
 ```python
-    import base64
-    image_content = base64.b64encode(open("spark_llama_index.png",'rb').read())
+import base64
+image_content = base64.b64encode(open("spark_llama_index.png",'rb').read())
 
-    spark = ChatSparkLLM(
-        spark_app_id=os.environ["SPARKAI_APP_ID"],
-        spark_api_key=os.environ["SPARKAI_API_KEY"],
-        spark_api_secret=os.environ["SPARKAI_API_SECRET"],
-        spark_llm_domain="image",
-        streaming=False,
-        user_agent="test"
+spark = ChatSparkLLM(
+    spark_app_id=os.environ["SPARKAI_APP_ID"],
+    spark_api_key=os.environ["SPARKAI_API_KEY"],
+    spark_api_secret=os.environ["SPARKAI_API_SECRET"],
+    spark_llm_domain="image",
+    streaming=False,
+    user_agent="test"
 
-    )
-    messages = [ImageChatMessage(
-        role="user",
-        content=image_content,
-        content_type="image"
-    ),ImageChatMessage(
-        role="user",
-        content="这是什么图",
-        content_type="text"
-    )]
-    handler = ChunkPrintHandler()
-    a = spark.generate([messages], callbacks=[])
+)
+messages = [ImageChatMessage(
+    role="user",
+    content=image_content,
+    content_type="image"
+),ImageChatMessage(
+    role="user",
+    content="这是什么图",
+    content_type="text"
+)]
+handler = ChunkPrintHandler()
+a = spark.generate([messages], callbacks=[])
 ```
 
 
