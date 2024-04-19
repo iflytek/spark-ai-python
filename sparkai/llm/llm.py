@@ -166,6 +166,8 @@ class ChatSparkLLM(BaseChatModel):
     request_timeout: int = 30
     temperature: float = 0.5
     top_k: int = 4
+    max_tokens: int = 2048
+
     model_kwargs: Dict[str, Any] = Field(default_factory=dict)
 
     @root_validator(pre=True)
@@ -227,6 +229,8 @@ class ChatSparkLLM(BaseChatModel):
         # put extra params into model_kwargs
         values["model_kwargs"]["temperature"] = values["temperature"] or cls.temperature
         values["model_kwargs"]["top_k"] = values["top_k"] or cls.top_k
+        values["model_kwargs"]["max_tokens"] = values["max_tokens"] or cls.max_tokens
+
 
         values["client"] = _SparkLLMClient(
             app_id=values["spark_app_id"],

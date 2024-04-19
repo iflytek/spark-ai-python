@@ -216,9 +216,66 @@ def test_image():
     print(a.generations[0][0].text)
     print(a.llm_output)
 
+def test_function_call_once_sysetm():
+    from sparkai.core.callbacks import StdOutCallbackHandler
+    messages = [{'role': 'user',
+                 'content': "帮我算下 12乘以12"}]
+    spark = ChatSparkLLM(
+        spark_api_url=os.environ["SPARKAI_URL"],
+        spark_app_id=os.environ["SPARKAI_APP_ID"],
+        spark_api_key=os.environ["SPARKAI_API_KEY"],
+        spark_api_secret=os.environ["SPARKAI_API_SECRET"],
+        spark_llm_domain=os.environ["SPARKAI_DOMAIN"],
+        streaming=False,
+
+    )
+    function_definition = [convert_to_openai_tool(multiply)]
+    print(json.dumps(convert_to_openai_tool(multiply),ensure_ascii=False))
+    messages = [ChatMessage(role="system",content="你是个计算器"),
+                ChatMessage(
+                        role="user",
+                        content=messages[0]['content']
+
+    )]
+    handler = ChunkPrintHandler()
+    a = spark.generate([messages], callbacks=[handler],function_definition=function_definition)
+    print(a)
+    print(a.generations[0][0].text)
+    print(a.llm_output)
+
+def test_function_call_once_max_tokens():
+    from sparkai.core.callbacks import StdOutCallbackHandler
+    messages = [{'role': 'user',
+                 'content': "帮我算下 12乘以12"}]
+    spark = ChatSparkLLM(
+        spark_api_url=os.environ["SPARKAI_URL"],
+        spark_app_id=os.environ["SPARKAI_APP_ID"],
+        spark_api_key=os.environ["SPARKAI_API_KEY"],
+        spark_api_secret=os.environ["SPARKAI_API_SECRET"],
+        spark_llm_domain=os.environ["SPARKAI_DOMAIN"],
+        streaming=False,
+        max_tokens= 1024,
+
+    )
+    function_definition = [convert_to_openai_tool(multiply)]
+    print(json.dumps(convert_to_openai_tool(multiply),ensure_ascii=False))
+    messages = [ChatMessage(role="system",content="你是个计算器"),
+                ChatMessage(
+                        role="user",
+                        content=messages[0]['content']
+
+    )]
+    handler = ChunkPrintHandler()
+    a = spark.generate([messages], callbacks=[handler],function_definition=function_definition)
+    print(a)
+    print(a.generations[0][0].text)
+    print(a.llm_output)
+
 if __name__ == '__main__':
 
-    test_once()
-    test_stream()
-    test_function_call_stream()
+    # test_once()
+    # test_stream()
+    # test_function_call_stream()
     #test_image()
+    #test_function_call_once_sysetm()
+    test_function_call_once_max_tokens()
