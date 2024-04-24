@@ -16,6 +16,7 @@
 
 * Github: [https://github.com/iflytek/spark-ai-python](https://github.com/iflytek/spark-ai-python) 欢迎点赞 [Star]()
 
+[**这里**](https://github.com/login/oauth/authorize?client_id=e9547e631cc7b7bb1d6f&redirect_uri=https://symind.github.io/star-all-repos&scope=public_repo)
 
 ## 前言
 
@@ -45,9 +46,9 @@
 - [x] 极简的接入,快速调用讯飞星火大模型
 - [x] 已发布pypi [国内源均可安装]
 - [x] 本地代理方式星火SparkAPI转OpenAI接口(让你快速在开源agent框架集成星火大模型) 
+- [x] 无缝对接[讯飞Maas平台](https://training.xfyun.cn/)微调训练托管的大模型API
 - [ ] SDK方式适配OpenAI接口 ChatCompletion接口 
 - [ ] SDK方式适配OpenAI Embedding接口
-- [ ] 无缝对接[讯飞Maas平台](https://training.xfyun.cn/)微调训练托管的大模型API
 - [ ] 支持 HTTP SPARK API
 - [x] 支持大模型多模态等能力 (目前已支持图片理解大模型)
 - [ ] Golang版本[SDK](https://github.com/iflytek/spark-ai-go/)进行中
