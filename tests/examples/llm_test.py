@@ -44,6 +44,7 @@ except ImportError:
 
 load_dotenv()
 
+
 def test_once():
     from sparkai.core.callbacks import StdOutCallbackHandler
     messages = [{'role': 'user',
@@ -66,6 +67,34 @@ def test_once():
     handler = ChunkPrintHandler()
     a = spark.generate([messages], callbacks=[handler])
     print(a)
+
+
+def test_stream_generator():
+    from sparkai.log.logger import logger
+    # logger.setLevel("debug")
+    from sparkai.core.callbacks import StdOutCallbackHandler
+    messages = [{'role': 'user',
+                 'content': "帮我生成一段代码，爬取baidu.com"}]
+    spark = ChatSparkLLM(
+        spark_api_url=os.environ["SPARKAI_URL"],
+        spark_app_id=os.environ["SPARKAI_APP_ID"],
+        spark_api_key=os.environ["SPARKAI_API_KEY"],
+        spark_api_secret=os.environ["SPARKAI_API_SECRET"],
+        spark_llm_domain=os.environ["SPARKAI_DOMAIN"],
+        streaming=True,
+        max_tokens=1024,
+
+    )
+    messages = [
+        ChatMessage(
+            role="user",
+            content=messages[0]['content']
+
+        )]
+    handler = ChunkPrintHandler()
+    # a = spark.generate([messages], callbacks=[])
+    for message in spark.stream(messages):
+        print(message.content),
 
 def test_stream():
     from sparkai.log.logger import logger
@@ -271,11 +300,73 @@ def test_function_call_once_max_tokens():
     print(a.generations[0][0].text)
     print(a.llm_output)
 
+
+
+def test_maas():
+    from sparkai.log.logger import logger
+    #logger.setLevel("debug")
+    from sparkai.core.callbacks import StdOutCallbackHandler
+    messages = [{'role': 'user',
+                 'content': "帮我算下 12乘以12"}]
+    spark = ChatSparkLLM(
+        spark_api_url="wss://xingchen-api.cn-huabei-1.xf-yun.com/v1.1/chat",
+        spark_app_id=os.environ["SPARKAI_APP_ID"],
+        spark_api_key=os.environ["SPARKAI_API_KEY"],
+        spark_api_secret=os.environ["SPARKAI_API_SECRET"],
+        spark_llm_domain="x6d6a8a00",
+        streaming=True,
+        max_tokens= 1024,
+
+    )
+    print(json.dumps(convert_to_openai_tool(multiply),ensure_ascii=False))
+    messages = [
+                ChatMessage(
+                        role="user",
+                        content=messages[0]['content']
+
+    )]
+    handler = ChunkPrintHandler()
+    a = spark.generate([messages], callbacks=[handler])
+    print(a.generations[0][0].text)
+    print(a.llm_output)
+def test_starcoder2():
+    from sparkai.log.logger import logger
+    #logger.setLevel("debug")
+    from sparkai.core.callbacks import StdOutCallbackHandler
+    messages = [{'role': 'user',
+                 'content': "帮我生成一段代码，爬取baidu.com"}]
+    spark = ChatSparkLLM(
+        spark_api_url="wss://xingchen-api.cn-huabei-1.xf-yun.com/v1.1/chat",
+        spark_app_id=os.environ["SPARKAI_APP_ID"],
+        spark_api_key=os.environ["SPARKAI_API_KEY"],
+        spark_api_secret=os.environ["SPARKAI_API_SECRET"],
+        spark_llm_domain="xsstarcoder27binst",
+        streaming=True,
+        max_tokens= 1024,
+
+    )
+    messages = [
+                ChatMessage(
+                        role="user",
+                        content=messages[0]['content']
+
+    )]
+    handler = ChunkPrintHandler()
+    #a = spark.generate([messages], callbacks=[])
+    a = spark.stream(messages)
+    for message in a:
+        print(message)
+
+
+
+
 if __name__ == '__main__':
 
     # test_once()
     # test_stream()
     # test_function_call_stream()
-    #test_image()
-    #test_function_call_once_sysetm()
-    test_function_call_once_max_tokens()
+    # test_image()
+    # test_function_call_once_sysetm()
+    # test_function_call_once_max_tokens()
+    # test_maas()
+    test_stream_generator()
