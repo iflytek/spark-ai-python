@@ -358,6 +358,33 @@ def test_starcoder2():
         print(message)
 
 
+async def test_astream():
+    from sparkai.log.logger import logger
+    #logger.setLevel("debug")
+    from sparkai.core.callbacks import StdOutCallbackHandler
+    messages = [{'role': 'user',
+                 'content': "帮我生成一段代码，爬取baidu.com"}]
+    spark = ChatSparkLLM(
+        spark_api_url="wss://xingchen-api.cn-huabei-1.xf-yun.com/v1.1/chat",
+        spark_app_id=os.environ["SPARKAI_APP_ID"],
+        spark_api_key=os.environ["SPARKAI_API_KEY"],
+        spark_api_secret=os.environ["SPARKAI_API_SECRET"],
+        spark_llm_domain="xsstarcoder27binst",
+        streaming=True,
+        max_tokens= 1024,
+
+    )
+    messages = [
+                ChatMessage(
+                        role="user",
+                        content=messages[0]['content']
+
+    )]
+    handler = ChunkPrintHandler()
+    a = spark.astream(messages)
+    async for message in a:
+        print(message)
+
 
 
 if __name__ == '__main__':
@@ -369,4 +396,7 @@ if __name__ == '__main__':
     # test_function_call_once_sysetm()
     # test_function_call_once_max_tokens()
     # test_maas()
-    test_stream_generator()
+    #test_stream_generator()
+    # test_starcoder2()
+    import asyncio
+    asyncio.run(test_astream())

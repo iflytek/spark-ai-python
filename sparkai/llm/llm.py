@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import hashlib
 import hmac
@@ -8,12 +9,15 @@ import threading
 from datetime import datetime
 from queue import Queue
 from time import mktime
-from typing import Any, Dict, Generator, Iterator, List, Mapping, Optional, Type
+from typing import Any, Dict, Generator, Iterator, List, Mapping, Optional, Type, AsyncIterator, AsyncGenerator
 from urllib.parse import urlencode, urlparse, urlunparse
 from wsgiref.handlers import format_date_time
 
+import httpx
+import websocket
+
 from sparkai.core.callbacks import (
-    CallbackManagerForLLMRun, BaseCallbackHandler,
+    CallbackManagerForLLMRun, BaseCallbackHandler, AsyncCallbackManagerForLLMRun,
 )
 from sparkai.core.language_models.chat_models import (
     BaseChatModel,
@@ -45,6 +49,7 @@ from sparkai.core.utils import (
     get_from_dict_or_env,
     get_pydantic_field_names,
 )
+from sparkai.v2.client.common.consts import IFLYTEK
 from sparkai.version import __version__
 
 from sparkai.log.logger import logger
@@ -161,7 +166,7 @@ class ChatSparkLLM(BaseChatModel):
     spark_api_url: Optional[str] = None
     spark_llm_domain: Optional[str] = None
     user_agent: Optional[str] = None
-    spark_user_id: str = "lc_user"
+    spark_user_id: str = "spark_sdk_user"
     streaming: bool = False
     request_timeout: int = 30
     temperature: float = 0.5
@@ -231,7 +236,6 @@ class ChatSparkLLM(BaseChatModel):
         values["model_kwargs"]["top_k"] = values["top_k"] or cls.top_k
         values["model_kwargs"]["max_tokens"] = values["max_tokens"] or cls.max_tokens
 
-
         values["client"] = _SparkLLMClient(
             app_id=values["spark_app_id"],
             api_key=values["spark_api_key"],
@@ -242,6 +246,43 @@ class ChatSparkLLM(BaseChatModel):
             user_agent=values["user_agent"],
         )
         return values
+
+    async def _astream(
+            self,
+            messages: List[BaseMessage],
+            stop: Optional[List[str]] = None,
+            run_manager: Optional[AsyncCallbackManagerForLLMRun] = None,
+            **kwargs: Any,
+    ) -> AsyncIterator[ChatGenerationChunk]:
+        default_chunk_class = AIMessageChunk
+        function_definition = []
+        if "function_definition" in kwargs:
+            function_definition = kwargs['function_definition']
+
+        llm_output = {}
+        if "llm_output" in kwargs:
+            llm_output = kwargs.get("llm_output")
+        else:
+            kwargs["llm_output"] = llm_output
+        converted_messages = convert_message_to_dict(messages)
+
+        self.client.arun(
+            converted_messages,
+            self.spark_user_id,
+            self.model_kwargs,
+            self.streaming,
+            function_definition
+        )
+        async for content in self.client.a_subscribe(timeout=self.request_timeout):
+            if "usage" in content:
+                llm_output["token_usage"] = content["usage"]
+            if "data" not in content:
+                continue
+            delta = content["data"]
+            chunk = _convert_delta_to_message_chunk(delta, default_chunk_class)
+            if run_manager:
+                await run_manager.on_llm_new_token(str(chunk.content))
+            yield ChatGenerationChunk(message=chunk)
 
     def _stream(
             self,
@@ -255,6 +296,12 @@ class ChatSparkLLM(BaseChatModel):
         if "function_definition" in kwargs:
             function_definition = kwargs['function_definition']
 
+        llm_output = {}
+        if "llm_output" in kwargs:
+            llm_output = kwargs.get("llm_output")
+        else:
+            kwargs["llm_output"] = llm_output
+
         converted_messages = convert_message_to_dict(messages)
 
         self.client.arun(
@@ -264,7 +311,6 @@ class ChatSparkLLM(BaseChatModel):
             self.streaming,
             function_definition
         )
-        llm_output = kwargs.get("llm_output")
         for content in self.client.subscribe(timeout=self.request_timeout):
             if "usage" in content:
                 llm_output["token_usage"] = content["usage"]
@@ -325,6 +371,13 @@ class ChatSparkLLM(BaseChatModel):
         return "spark-llm-chat"
 
 
+def prepare_user_agent(user_agent):
+    extra_user_agent = ""
+    if user_agent:
+        extra_user_agent = user_agent
+    return {"User-Agent": "SparkAISdk/python-v%s %s" % (__version__, extra_user_agent)}
+
+
 class _SparkLLMClient:
     """
     Use websocket-client to call the SparkLLM interface provided by Xfyun,
@@ -339,17 +392,17 @@ class _SparkLLMClient:
             api_url: Optional[str] = None,
             spark_domain: Optional[str] = None,
             model_kwargs: Optional[dict] = None,
-            user_agent: Optional[str] = None
-    ):
-        try:
-            import websocket
+            user_agent: Optional[str] = None,
+            provider=IFLYTEK,
+            is_ws=True
 
-            self.websocket_client = websocket
-        except ImportError:
-            raise ImportError(
-                "Could not import websocket client python package. "
-                "Please install it with `pip install websocket-client`."
-            )
+    ):
+        self.is_ws = is_ws
+        if self.is_ws:
+            self.client = websocket
+        else:
+            self.client = httpx.Client()
+
         self.spark_domain = spark_domain or DefaultDomain
 
         if api_url is None or api_url == "":
@@ -365,7 +418,7 @@ class _SparkLLMClient:
         self.blocking_message = {"content": "", "role": "assistant"}
         self.api_key = api_key
         self.api_secret = api_secret
-        self.extra_user_agent = user_agent
+        self.user_agent = prepare_user_agent(user_agent)
 
     def _adjust_api_by_domain(self, url: str, domain: str) -> str:
         """
@@ -386,6 +439,7 @@ class _SparkLLMClient:
         if domain not in host_map:
             domain = DefaultDomain
             logger.warning("not find the  domain, using default domain: %s", domain)
+            return url
 
         if url != "" and url != host_map[domain]:
             logger.warning("specified host not match the domain default host, using default domain: %s", domain)
@@ -393,19 +447,19 @@ class _SparkLLMClient:
         return host_map[domain]
 
     @staticmethod
-    def _create_url(api_url: str, api_key: str, api_secret: str) -> str:
+    def _create_url(api_url: str, api_key: str, api_secret: str, method="GET") -> str:
         """
         Generate a request url with an api key and an api secret.
         """
         # generate timestamp by RFC1123
         date = format_date_time(mktime(datetime.now().timetuple()))
-
+        encrypt_method = "hmac-sha256"
         # urlparse
         parsed_url = urlparse(api_url)
         host = parsed_url.netloc
         path = parsed_url.path
 
-        signature_origin = f"host: {host}\ndate: {date}\nGET {path} HTTP/1.1"
+        signature_origin = f"host: {host}\ndate: {date}\n{method} {path} HTTP/1.1"
 
         # encrypt using hmac-sha256
         signature_sha = hmac.new(
@@ -416,7 +470,7 @@ class _SparkLLMClient:
 
         signature_sha_base64 = base64.b64encode(signature_sha).decode(encoding="utf-8")
 
-        authorization_origin = f'api_key="{api_key}", algorithm="hmac-sha256", \
+        authorization_origin = f'api_key="{api_key}", algorithm="{encrypt_method}", \
         headers="host date request-line", signature="{signature_sha_base64}"'
         authorization = base64.b64encode(authorization_origin.encode("utf-8")).decode(
             encoding="utf-8"
@@ -445,28 +499,31 @@ class _SparkLLMClient:
             streaming: bool = False,
             function_definition: List[Dict] = []
     ) -> None:
-        self.websocket_client.enableTrace(False)
-        extra_user_agent = ""
-        if self.extra_user_agent:
-            extra_user_agent = self.extra_user_agent
-        ws = self.websocket_client.WebSocketApp(
-            _SparkLLMClient._create_url(
-                self.api_url,
-                self.api_key,
-                self.api_secret,
-            ),
-            on_message=self.on_message,
-            on_error=self.on_error,
-            on_close=self.on_close,
-            on_open=self.on_open,
-            header={"User-Agent": "SparkAISdk/python-v%s %s" % (__version__, extra_user_agent)}
-        )
-        ws.function_definition = function_definition
-        ws.messages = messages
-        ws.user_id = user_id
-        ws.model_kwargs = self.model_kwargs if model_kwargs is None else model_kwargs
-        ws.streaming = streaming
-        ws.run_forever()
+        if self.is_ws:
+            self.client.enableTrace(False)
+            ws = self.client.WebSocketApp(
+                _SparkLLMClient._create_url(
+                    self.api_url,
+                    self.api_key,
+                    self.api_secret,
+
+                ),
+                on_message=self.on_message,
+                on_error=self.on_error,
+                on_close=self.on_close,
+                on_open=self.on_open,
+                header=self.user_agent
+            )
+            ws.function_definition = function_definition
+            ws.messages = messages
+            ws.user_id = user_id
+            ws.model_kwargs = self.model_kwargs if model_kwargs is None else model_kwargs
+            ws.streaming = streaming
+            ws.run_forever()
+        else:
+            # HTTP logic
+            result = self.request(messages)
+            self.queue.put()
 
     def arun(
             self,
@@ -476,7 +533,7 @@ class _SparkLLMClient:
             streaming: bool = False,
             function_definition: List[Dict] = [],
     ) -> threading.Thread:
-        ws_thread = threading.Thread(
+        req_thread = threading.Thread(
             target=self.run,
             args=(
                 messages,
@@ -486,8 +543,8 @@ class _SparkLLMClient:
                 function_definition,
             ),
         )
-        ws_thread.start()
-        return ws_thread
+        req_thread.start()
+        return req_thread
 
     def on_error(self, ws: Any, error: Optional[Any]) -> None:
         self.queue.put({"error": error})
@@ -565,6 +622,35 @@ class _SparkLLMClient:
         logger.debug(f"Spark Request Parameters: {data}")
         return data
 
+    async def a_subscribe(self, timeout: Optional[int] = 30) -> AsyncGenerator[Dict, None]:
+        err_cnt = 0
+        while True:
+            try:
+                content = self.queue.get(timeout=timeout)
+            except queue.Empty as _:
+                e = TimeoutError(
+                    f"SparkLLMClient wait LLM api response timeout {timeout} seconds"
+                )
+                logger.error(e)
+                err_cnt += 1
+                if err_cnt >= 4:
+                    raise e
+                else:
+                    continue
+            if "error" in content:
+                e = ConnectionError(content["error"])
+                err_cnt += 1
+                raise e
+
+            if "usage" in content:
+                yield content
+                continue
+            if "done" in content:
+                break
+            if "data" not in content:
+                break
+            yield content
+
     def subscribe(self, timeout: Optional[int] = 30) -> Generator[Dict, None, None]:
         err_cnt = 0
         while True:
@@ -593,6 +679,13 @@ class _SparkLLMClient:
             if "data" not in content:
                 break
             yield content
+
+    def request(self, messages):
+        resp = self.client.get('https://www.baidu.com')
+        result = resp.json()
+        # print(result)
+        assert result["code"] == 300
+        return result
 
 
 class ChunkPrintHandler(BaseCallbackHandler):
