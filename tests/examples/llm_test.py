@@ -34,7 +34,7 @@ import json
 import os
 
 from sparkai.core.utils.function_calling import convert_to_openai_tool
-from sparkai.llm.llm import ChatSparkLLM, ChunkPrintHandler
+from sparkai.llm.llm import ChatSparkLLM, ChunkPrintHandler,AsyncChunkPrintHandler
 from sparkai.core.messages import ChatMessage, ImageChatMessage
 
 try:
@@ -357,7 +357,6 @@ def test_starcoder2():
     for message in a:
         print(message)
 
-
 async def test_astream():
     from sparkai.log.logger import logger
     #logger.setLevel("debug")
@@ -372,7 +371,6 @@ async def test_astream():
         spark_llm_domain="xsstarcoder27binst",
         streaming=True,
         max_tokens= 1024,
-
     )
     messages = [
                 ChatMessage(
@@ -380,8 +378,8 @@ async def test_astream():
                         content=messages[0]['content']
 
     )]
-    handler = ChunkPrintHandler()
-    a = spark.astream(messages)
+    handler = AsyncChunkPrintHandler()
+    a = spark.astream(messages, config={"callbacks": [handler]})
     async for message in a:
         print(message)
 
@@ -389,14 +387,15 @@ async def test_astream():
 
 if __name__ == '__main__':
 
-    # test_once()
-    # test_stream()
-    # test_function_call_stream()
-    # test_image()
-    # test_function_call_once_sysetm()
-    # test_function_call_once_max_tokens()
-    # test_maas()
-    #test_stream_generator()
-    # test_starcoder2()
+    test_once()
+    test_stream()
+    test_function_call_once()
+    test_function_call_stream()
+    test_image()
+    test_function_call_once_sysetm()
+    test_function_call_once_max_tokens()
+    test_maas()
+    test_stream_generator()
+    test_starcoder2()
     import asyncio
     asyncio.run(test_astream())

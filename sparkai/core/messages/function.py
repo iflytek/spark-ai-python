@@ -56,7 +56,6 @@ class FunctionMessageChunk(FunctionMessage, BaseMessageChunk):
 
 class FunctionCallMessage(BaseMessage):
     """A FunctionCall Message from an AI."""
-
     example: bool = False
     """Whether this Message is being passed in to the model as part of an example 
         conversation.
@@ -76,11 +75,11 @@ FunctionCallMessage.update_forward_refs()
 
 class FunctionCallMessageChunk(FunctionCallMessage, BaseMessageChunk):
     """A FunctionCall Message chunk."""
-
+    name:str = "function_call"
     # Ignoring mypy re-assignment here since we're overriding the value
     # to make sure that the chunk variant can be discriminated from the
     # non-chunk variant.
-    type: Literal["FunctionMessageChunk"] = "FunctionMessageChunk"  # type: ignore[assignment]
+    type: Literal["FunctionCallMessageChunk"] = "FunctionCallMessageChunk"  # type: ignore[assignment]
 
     @classmethod
     def get_lc_namespace(cls) -> List[str]:
@@ -97,6 +96,7 @@ class FunctionCallMessageChunk(FunctionCallMessage, BaseMessageChunk):
             return self.__class__(
                 name=self.name,
                 content=merge_content(self.content, other.content),
+                function_call=other.function_call, # function call no need chunk now
                 additional_kwargs=self._merge_kwargs_dict(
                     self.additional_kwargs, other.additional_kwargs
                 ),

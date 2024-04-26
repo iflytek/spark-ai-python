@@ -53,6 +53,7 @@
 - [x] 支持大模型多模态等能力 (目前已支持图片理解大模型)
 - [ ] Golang版本[SDK](https://github.com/iflytek/spark-ai-go/)进行中
 - [ ] 对接 [liteLLM](https://github.com/BerriAI/litellm)
+- [x] 新增 stream接口支持
 
 
 
@@ -132,6 +133,7 @@ if __name__ == '__main__':
 
 ### 流式返回结果
 
+#### 方式1: 回调函数
 tests/examples/llm_test.py
 
 ```python
@@ -182,9 +184,81 @@ class ChunkPrintHandler(BaseCallbackHandler):
         chunk:  None,
         **kwargs: Any,):
         print(token)
+        print(kwargs)
+        # token 为模型生成的token
+        # 可以check kwargs内容，kwargs中 llm_output中有usage相关信息， final表示是否是最后一帧
+        
 
 ```
 上述在 on_llm_new_token 实现您的流式处理逻辑,如需定制流式处理逻辑，请参考上述实现，继承: BaseCallbackHandler
+
+#### 方式2: stream/astream接口
+
+直接遍历生成器(同步stream接口):
+```python
+
+def test_starcoder2():
+    from sparkai.log.logger import logger
+    #logger.setLevel("debug")
+    from sparkai.core.callbacks import StdOutCallbackHandler
+    messages = [{'role': 'user',
+                 'content': "帮我生成一段代码，爬取baidu.com"}]
+    spark = ChatSparkLLM(
+        spark_api_url="wss://xingchen-api.cn-huabei-1.xf-yun.com/v1.1/chat",
+        spark_app_id=os.environ["SPARKAI_APP_ID"],
+        spark_api_key=os.environ["SPARKAI_API_KEY"],
+        spark_api_secret=os.environ["SPARKAI_API_SECRET"],
+        spark_llm_domain="xsstarcoder27binst",
+        streaming=True,
+        max_tokens= 1024,
+    )
+    messages = [
+                ChatMessage(
+                        role="user",
+                        content=messages[0]['content']
+
+    )]
+
+    a = spark.stream(messages)
+    for message in a:
+        print(message)
+```
+
+或者是异步astream接口:
+
+```python
+
+async def test_astream():
+    from sparkai.log.logger import logger
+    #logger.setLevel("debug")
+    from sparkai.core.callbacks import StdOutCallbackHandler
+    messages = [{'role': 'user',
+                 'content': "帮我生成一段代码，爬取baidu.com"}]
+    spark = ChatSparkLLM(
+        spark_api_url="wss://xingchen-api.cn-huabei-1.xf-yun.com/v1.1/chat",
+        spark_app_id=os.environ["SPARKAI_APP_ID"],
+        spark_api_key=os.environ["SPARKAI_API_KEY"],
+        spark_api_secret=os.environ["SPARKAI_API_SECRET"],
+        spark_llm_domain="xsstarcoder27binst",
+        streaming=True,
+        max_tokens= 1024,
+    )
+    messages = [
+                ChatMessage(
+                        role="user",
+                        content=messages[0]['content']
+
+    )]
+    handler = AsyncChunkPrintHandler()
+    a = spark.astream(messages, config={"callbacks": [handler]})
+    async for message in a:
+        print(message)
+
+if __name__ == '__main__':
+    import asyncio
+    asyncio.run(test_astream())
+```
+
 
 ### FunctionCall功能
 比如将 mulitply 乘法函数定义传入 ChatSparkLLM

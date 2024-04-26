@@ -9,7 +9,7 @@ import threading
 from datetime import datetime
 from queue import Queue
 from time import mktime
-from typing import Any, Dict, Generator, Iterator, List, Mapping, Optional, Type, AsyncIterator, AsyncGenerator
+from typing import Any, Dict, Generator, Iterator, List, Mapping, Optional, Type, AsyncIterator, AsyncGenerator, Union
 from urllib.parse import urlencode, urlparse, urlunparse
 from wsgiref.handlers import format_date_time
 
@@ -17,8 +17,9 @@ import httpx
 import websocket
 
 from sparkai.core.callbacks import (
-    CallbackManagerForLLMRun, BaseCallbackHandler, AsyncCallbackManagerForLLMRun,
+    CallbackManagerForLLMRun, BaseCallbackHandler, AsyncCallbackManagerForLLMRun, AsyncCallbackHandler,
 )
+from sparkai.core.callbacks.manager import ahandle_event
 from sparkai.core.language_models.chat_models import (
     BaseChatModel,
     generate_from_stream,
@@ -42,7 +43,7 @@ from sparkai.core.messages import (
 from sparkai.core.outputs import (
     ChatGeneration,
     ChatGenerationChunk,
-    ChatResult,
+    ChatResult, GenerationChunk,
 )
 from sparkai.core.pydantic_v1 import Field, root_validator
 from sparkai.core.utils import (
@@ -273,15 +274,22 @@ class ChatSparkLLM(BaseChatModel):
             self.streaming,
             function_definition
         )
+        final_frame = False
         async for content in self.client.a_subscribe(timeout=self.request_timeout):
             if "usage" in content:
+                final_frame = True
                 llm_output["token_usage"] = content["usage"]
-            if "data" not in content:
+            if "data" not in content and not final_frame:
                 continue
-            delta = content["data"]
-            chunk = _convert_delta_to_message_chunk(delta, default_chunk_class)
+            if not final_frame:
+                delta = content["data"]
+                chunk = _convert_delta_to_message_chunk(delta, default_chunk_class)
+            else:
+                delta = {}
             if run_manager:
-                await run_manager.on_llm_new_token(str(chunk.content))
+                await run_manager.on_llm_new_token(str(chunk.content), llm_output=llm_output, data=delta,
+                                                   final=final_frame)
+
             yield ChatGenerationChunk(message=chunk)
 
     def _stream(
@@ -311,15 +319,20 @@ class ChatSparkLLM(BaseChatModel):
             self.streaming,
             function_definition
         )
+        final_frame = False
         for content in self.client.subscribe(timeout=self.request_timeout):
             if "usage" in content:
+                final_frame = True
                 llm_output["token_usage"] = content["usage"]
-            if "data" not in content:
+            if "data" not in content and not final_frame:
                 continue
-            delta = content["data"]
-            chunk = _convert_delta_to_message_chunk(delta, default_chunk_class)
+            if not final_frame:
+                delta = content["data"]
+                chunk = _convert_delta_to_message_chunk(delta, default_chunk_class)
+            else:
+                delta =  {}
             if run_manager:
-                run_manager.on_llm_new_token(str(chunk.content))
+                run_manager.on_llm_new_token(str(chunk.content), llm_output=llm_output, data=delta, final=final_frame)
             yield ChatGenerationChunk(message=chunk)
 
     def _generate(
@@ -674,18 +687,19 @@ class _SparkLLMClient:
             if "usage" in content:
                 yield content
                 continue
+            # continue
             if "done" in content:
                 break
             if "data" not in content:
                 break
             yield content
 
-    def request(self, messages):
-        resp = self.client.get('https://www.baidu.com')
-        result = resp.json()
-        # print(result)
-        assert result["code"] == 300
-        return result
+    # def request(self, messages):
+    #     resp = self.client.get('')
+    #     result = resp.json()
+    #     # print(result)
+    #     assert result["code"] == 300
+    #     return result
 
 
 class ChunkPrintHandler(BaseCallbackHandler):
@@ -700,3 +714,31 @@ class ChunkPrintHandler(BaseCallbackHandler):
                          chunk: None,
                          **kwargs: Any, ):
         print(token)
+        print(kwargs)
+
+
+class AsyncChunkPrintHandler(AsyncCallbackHandler):
+    """Callback Handler that prints to std out."""
+
+    def __init__(self, color: Optional[str] = None) -> None:
+        """Initialize callback handler."""
+        super().__init__()
+        self.color = color
+
+
+    async def on_llm_new_token(
+        self,
+        token: str,
+        *,
+        chunk: Optional[Union[GenerationChunk, ChatGenerationChunk]] = None,
+        **kwargs: Any,
+    ) -> None:
+        """Run when LLM generates a new token.
+
+        Args:
+            token (str): The new token.
+        """
+        print(token)
+        print(kwargs)
+
+
