@@ -64,7 +64,6 @@ def get_Body(appid, text, style):
             }
         }
     }
-    # print(body)
     return body
 
 
@@ -88,7 +87,7 @@ class Embeddingmodel():
         self.spark_domain = spark_domain
         self.kind = 'text'
         self.request_url = 'https://emb-cn-huabei-1.xf-yun.com/'
-        self.client = sparkaiclient(spark_app_id, spark_api_key, spark_api_secret, spark_domain)
+        self.client = SparkHttpClient(spark_app_id, spark_api_key, spark_api_secret, spark_domain)
 
     def embedding(self, text=None, kind='text') -> Dict:
         if text is None:
@@ -113,7 +112,7 @@ class Embeddingmodel():
         return text.tolist()
 
 
-class sparkaiclient():
+class SparkHttpClient():
     def __init__(self,
                  app_id: None
                  , api_key: None,

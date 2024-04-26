@@ -48,7 +48,7 @@
 - [x] 本地代理方式星火SparkAPI转OpenAI接口(让你快速在开源agent框架集成星火大模型) 
 - [x] 无缝对接[讯飞Maas平台](https://training.xfyun.cn/)微调训练托管的大模型API
 - [ ] SDK方式适配OpenAI接口 ChatCompletion接口 
-- [ ] SDK方式适配OpenAI Embedding接口
+- [x] SDK方式适配OpenAI Embedding接口 [实验性支持](#embedding支持)
 - [ ] 支持 HTTP SPARK API
 - [x] 支持大模型多模态等能力 (目前已支持图片理解大模型)
 - [ ] Golang版本[SDK](https://github.com/iflytek/spark-ai-go/)进行中
@@ -470,6 +470,64 @@ handler = ChunkPrintHandler()
 a = spark.generate([messages], callbacks=[])
 ```
 
+### Embedding支持
+
+参考如下 test方法:
+```python
+from sparkai.embedding.spark_embedding import Embeddingmodel, SparkEmbeddingFunction
+import chromadb
+
+
+def test_embedding():
+    model = Embeddingmodel(
+        spark_app_id="id",
+        spark_api_key="key",
+        spark_api_secret="secret",
+        spark_domain="query",
+    )
+    # desc = {"messages":[{"content":"cc","role":"user"}]}
+    desc = {"content": "cc", "role": "user"}
+    # 调用embedding方法
+    a = model.embedding(text=desc, kind='text')
+    # print(len(a))
+    print(a)
+
+
+def test_chroma_embedding():
+    chroma_client = chromadb.Client()
+    sparkmodel = SparkEmbeddingFunction(
+        spark_app_id="id",
+        spark_api_key="key",
+        spark_api_secret="secret",
+        spark_domain="query",
+    )
+    a = sparkmodel(["This is a document", "This is another document"])
+    # print(type(a))
+    # print(a[0])
+    # print(a[0][1])
+    # 可以正确的生成embedding结果
+    collection = chroma_client.get_or_create_collection(name="my_collection", embedding_function=sparkmodel)
+    # 为什么是None
+    collection.add(
+        documents=["This is a document", "cc", "1122"],
+        metadatas=[{"source": "my_source"}, {"source": "my_source"}, {"source": "my_source"}],
+        ids=["id1", "id2", "id3"]
+    )
+    # print(collection.peek())  #显示前五条数据
+    print(collection.count())  # 数据库中数据量
+    results = collection.query(
+        query_texts=["ac", 'documents'],
+        n_results=2
+    )
+    print(results)  # 查询结果
+
+
+if __name__ == "__main__":
+    test_embedding()
+    test_chroma_embedding()
+```
+
+
 
 ### 调试模式
 
@@ -478,7 +536,6 @@ a = spark.generate([messages], callbacks=[])
 from sparkai.log.logger import logger
 logger.setLevel("debug")
 ```
-
 
 
 ## 欢迎贡献
@@ -491,6 +548,8 @@ logger.setLevel("debug")
 
 * 项目目前开发阶段，有一些冗余代码，人力有限，部分思想借鉴开源实现
 * Client当前不支持多路复用，多线程使用时， 每个线程需要单独实例化Client
+* 当前流式接口不支持每帧统计token数量，需要sparkapi正式支持该特性后， sdk会同步支持。
+* 
 
 ## URL
 

@@ -1,11 +1,10 @@
-from sparkai.frameworks.Embedding.spark_embedding import Embeddingmodel, SparkEmbeddingFunction
+from sparkai.embedding.spark_embedding import Embeddingmodel, SparkEmbeddingFunction
 import chromadb
 
 
 def test_embedding():
     model = Embeddingmodel(
         spark_app_id="id",
-        # spark_app_id ='3',
         spark_api_key="key",
         spark_api_secret="secret",
         spark_domain="query",
