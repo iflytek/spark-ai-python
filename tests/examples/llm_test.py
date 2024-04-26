@@ -394,7 +394,7 @@ if __name__ == '__main__':
     test_image()
     test_function_call_once_sysetm()
     test_function_call_once_max_tokens()
-    test_maas()
+    #test_maas()
     test_stream_generator()
     test_starcoder2()
     import asyncio

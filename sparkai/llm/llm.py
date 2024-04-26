@@ -286,6 +286,8 @@ class ChatSparkLLM(BaseChatModel):
                 chunk = _convert_delta_to_message_chunk(delta, default_chunk_class)
             else:
                 delta = {}
+                chunk = default_chunk_class(content="")
+
             if run_manager:
                 await run_manager.on_llm_new_token(str(chunk.content), llm_output=llm_output, data=delta,
                                                    final=final_frame)
@@ -331,6 +333,8 @@ class ChatSparkLLM(BaseChatModel):
                 chunk = _convert_delta_to_message_chunk(delta, default_chunk_class)
             else:
                 delta =  {}
+                chunk = default_chunk_class(content="")
+
             if run_manager:
                 run_manager.on_llm_new_token(str(chunk.content), llm_output=llm_output, data=delta, final=final_frame)
             yield ChatGenerationChunk(message=chunk)

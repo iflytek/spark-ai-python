@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "spark-ai-python"
-version = "0.3.22"
+version = "0.3.24"
 description = "a sdk for iflytek's spark LLM."
 authors = ["whybeyoung <ybyang7@iflytek.com>", "mingduan <mingduan@iflytek.com>"]
 license = "MIT"
@@ -24,6 +24,7 @@ tenacity = "*"
 jsonpatch = "*"
 pydantic = "*"
 pyyaml = "*"
+httpx = "*"
 
 llama-index-core = { version = "^0.10.24.post1", optional = true }
 pyautogen = { version = ">=0.2.20", optional = true }
