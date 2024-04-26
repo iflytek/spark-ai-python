@@ -9,15 +9,24 @@ import hmac
 from urllib.parse import urlencode
 import numpy as np
 import json
+
+import chromadb
+from chromadb import Documents, EmbeddingFunction, Embeddings
+from typing import Any, Dict, Generator, Iterator, List, Mapping, Optional, Type
+
+
 class AssembleHeaderException(Exception):
     def __init__(self, msg):
         self.message = msg
+
+
 class Url:
     def __init__(this, host, path, schema):
         this.host = host
         this.path = path
         this.schema = schema
         pass
+
 
 def parse_url(request_url):
     stidx = request_url.index("://")
@@ -30,81 +39,84 @@ def parse_url(request_url):
     host = host[:edidx]
     u = Url(host, path, schema)
     return u
-def get_Body(appid,text,style):
+
+
+def get_Body(appid, text, style):
     org_content = json.dumps(text).encode('utf-8')
-    #print(org_content)
-    body= {
-    "header": {
-        "app_id": appid,
-        "uid": "39769795890",
-        "status": 3
-    },
-    "parameter": {
-        "emb": {
-            "domain": style ,
-            "feature": {
-                "encoding": "utf8"
+    # print(org_content)
+    body = {
+        "header": {
+            "app_id": appid,
+            "uid": "39769795890",
+            "status": 3
+        },
+        "parameter": {
+            "emb": {
+                "domain": style,
+                "feature": {
+                    "encoding": "utf8"
+                }
+            }
+        },
+        "payload": {
+            "messages": {
+                "text": base64.b64encode(json.dumps(text).encode('utf-8')).decode()
             }
         }
-    },
-    "payload": {
-        "messages": {
-            "text": base64.b64encode(json.dumps(text).encode('utf-8')).decode()
-        }
     }
-    }
-    #print(body)
+    # print(body)
     return body
-#desc = {"messages":[{"content":"cc","role":"user"}]}
+
+
+# desc = {"messages":[{"content":"cc","role":"user"}]}
 def convet_dict_to_message(msg):
-    demessage={}
-    demessage["messages"]=[msg]
+    demessage = {}
+    demessage["messages"] = [msg]
     return demessage
 
-class embeddingmodel():
+
+class Embeddingmodel():
     def __init__(self,
-    spark_app_id: Optional[str] = None,
-    spark_api_key: Optional[str] = None,
-    spark_api_secret: Optional[str] = None,
-    spark_domain: Optional[str] = None,
-    ):
+                 spark_app_id: Optional[str] = None,
+                 spark_api_key: Optional[str] = None,
+                 spark_api_secret: Optional[str] = None,
+                 spark_domain: Optional[str] = None,
+                 ):
         self.spark_app_id = spark_app_id
         self.spark_api_key = spark_api_key
         self.spark_api_secret = spark_api_secret
         self.spark_domain = spark_domain
         self.kind = 'text'
         self.request_url = 'https://emb-cn-huabei-1.xf-yun.com/'
-        self.client=sparkaiclient(spark_app_id,spark_api_key,spark_api_secret,spark_domain)
+        self.client = sparkaiclient(spark_app_id, spark_api_key, spark_api_secret, spark_domain)
 
-    def embedding(self,text=None,kind='text')->Dict:
-        try:
-            text=convet_dict_to_message(text)
-            text_vector = {}
-            res = self.client.run(text)
-            code=res['header']['code']
-            #print(code)
-            if code == 0:
-                text_base=res['payload']['feature']['text']
-                # 使用base64.b64decode()函数将text_base解码为字节串text_data
-                text_data = base64.b64decode(text_base)
-                # 创建一个np.float32类型的数据类型对象dt，表示32位浮点数。
-                dt = np.dtype(np.float32)
-                # 使用newbyteorder()方法将dt的字节序设置为小端（"<"）
-                dt = dt.newbyteorder("<")
-                # 使用np.frombuffer()函数将text_data转换为浮点数数组text，数据类型为dt。
-                text= np.frombuffer(text_data, dtype=dt)
-                text_vector['embedding_vector'] = text
-                text_vector['vector_length'] = len(text)
-                return text_vector
-            else:
-                 raise AssertionError('ERROR message: ' + res['header']['message'])
-        except Exception as e:
-            print(f"An error occurred: {e}")
+    def embedding(self, text=None, kind='text') -> Dict:
+        if text is None:
+            raise ValueError('No text provided for embedding')
+
+        text = convet_dict_to_message(text)
+        res = self.client.run(text)
+        code = res['header']['code']
+        # print(code)
+        if code != 0:
+            err_msg = res['header']['message']
+            raise ValueError(f'Error from embedding service:{code}:{err_msg}')
+        text_base = res['payload']['feature']['text']
+        # 使用base64.b64decode()函数将text_base解码为字节串text_data
+        text_data = base64.b64decode(text_base)
+        # 创建一个np.float32类型的数据类型对象dt，表示32位浮点数。
+        dt = np.dtype(np.float32)
+        # 使用newbyteorder()方法将dt的字节序设置为小端（"<"）
+        dt = dt.newbyteorder("<")
+        # 使用np.frombuffer()函数将text_data转换为浮点数数组text，数据类型为dt。
+        text = np.frombuffer(text_data, dtype=dt)
+        return text.tolist()
+
 
 class sparkaiclient():
     def __init__(self,
-                 app_id:  None
-                 ,api_key: None,
+                 app_id: None
+                 , api_key: None,
                  api_secret: None,
                  spark_domain: None,
                  ):
@@ -113,6 +125,7 @@ class sparkaiclient():
         self.api_key = api_key
         self.api_secret = api_secret
         self.style = spark_domain
+
     @staticmethod
     def restruct_url(request_url: str = ""
                      , method: str = "POST",
@@ -134,11 +147,32 @@ class sparkaiclient():
             "date": date,
             "authorization": authorization
         }
-        url= request_url + "?" + urlencode(values)
+        url = request_url + "?" + urlencode(values)
         return url
-    def run(self,text):
-        url = self.restruct_url(self.app_url,'POST',
-                                api_key=self.api_key,api_secret=self.api_secret)
-        content = get_Body(self.app_id,text,self.style)
+
+    def run(self, text):
+        url = self.restruct_url(self.app_url, 'POST',
+                                api_key=self.api_key, api_secret=self.api_secret)
+        content = get_Body(self.app_id, text, self.style)
         response = requests.post(url, json=content, headers={'content-type': "application/json"}).json()
         return response
+
+
+class SparkEmbeddingFunction(EmbeddingFunction[Documents]):
+    def __init__(self,
+                 spark_app_id: Optional[str] = None,
+                 spark_api_key: Optional[str] = None,
+                 spark_api_secret: Optional[str] = None,
+                 spark_domain: Optional[str] = None,
+                 ):
+        self.client = Embeddingmodel(spark_app_id, spark_api_key, spark_api_secret, spark_domain)
+
+    # 传入逗号分隔一个列表["This is a document", "This is another document"]
+    def __call__(self, input: Documents) -> Embeddings:
+        conver_list = []
+        for text in input:
+            conver_list.append({"content": text, "role": "user"})
+        return [
+            self.client.embedding(text)
+            for text in conver_list
+        ]
