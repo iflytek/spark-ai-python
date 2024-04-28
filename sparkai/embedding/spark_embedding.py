@@ -76,18 +76,19 @@ def convet_dict_to_message(msg):
 
 class Embeddingmodel():
     def __init__(self,
-                 spark_app_id: Optional[str] = None,
-                 spark_api_key: Optional[str] = None,
-                 spark_api_secret: Optional[str] = None,
-                 spark_domain: Optional[str] = None,
+                 spark_embedding_app_id: Optional[str] = None,
+                 spark_embedding_api_key: Optional[str] = None,
+                 spark_embedding_api_secret: Optional[str] = None,
+                 spark_embedding_domain: Optional[str] = None,
                  ):
-        self.spark_app_id = spark_app_id
-        self.spark_api_key = spark_api_key
-        self.spark_api_secret = spark_api_secret
-        self.spark_domain = spark_domain
+        self.spark_embedding_app_id = spark_embedding_app_id
+        self.spark_embedding_api_key = spark_embedding_api_key
+        self.spark_embedding_api_secret = spark_embedding_api_secret
+        self.spark_embedding_domain = spark_embedding_domain
         self.kind = 'text'
         self.request_url = 'https://emb-cn-huabei-1.xf-yun.com/'
-        self.client = SparkHttpClient(spark_app_id, spark_api_key, spark_api_secret, spark_domain)
+        self.client = SparkHttpClient(spark_embedding_app_id, spark_embedding_api_key,
+                                      spark_embedding_api_secret, spark_embedding_domain)
 
     def embedding(self, text=None, kind='text') -> Dict:
         if text is None:
@@ -159,12 +160,13 @@ class SparkHttpClient():
 
 class SparkEmbeddingFunction(EmbeddingFunction[Documents]):
     def __init__(self,
-                 spark_app_id: Optional[str] = None,
-                 spark_api_key: Optional[str] = None,
-                 spark_api_secret: Optional[str] = None,
-                 spark_domain: Optional[str] = None,
+                 spark_embedding_app_id: Optional[str] = None,
+                 spark_embedding_api_key: Optional[str] = None,
+                 spark_embedding_api_secret: Optional[str] = None,
+                 spark_embedding_domain: Optional[str] = None,
                  ):
-        self.client = Embeddingmodel(spark_app_id, spark_api_key, spark_api_secret, spark_domain)
+        self.client = Embeddingmodel(spark_embedding_app_id, spark_embedding_api_key,
+                                     spark_embedding_api_secret, spark_embedding_domain)
 
     # 传入逗号分隔一个列表["This is a document", "This is another document"]
     def __call__(self, input: Documents) -> Embeddings:

@@ -19,32 +19,32 @@ def get_embeddings(client: Embeddingmodel, texts: List[str]) -> List[List[float]
 
 
 class SparkAiEmbeddingModel(BaseEmbedding):
-    spark_api_key: str = Field(description="The SparkAI API key.")
-    spark_api_secret: str = Field(description="SparkAI API secret.")
-    spark_app_id: str = Field(description="SparkAI app id.")
-    spark_domain: str = Field(description="SparkAI domain")
+    spark_embedding_api_key: str = Field(description="The SparkAI API key.")
+    spark_embedding_api_secret: str = Field(description="SparkAI API secret.")
+    spark_embedding_app_id: str = Field(description="SparkAI app id.")
+    spark_embedding_domain: str = Field(description="SparkAI domain")
     _client: Optional[Embeddingmodel] = PrivateAttr()
 
     def __init__(self,
-                 spark_app_id: Optional[str] = None,
-                 spark_api_key: Optional[str] = None,
-                 spark_api_secret: Optional[str] = None,
-                 spark_domain: Optional[str] = None,
+                 spark_embedding_app_id: Optional[str] = None,
+                 spark_embedding_api_key: Optional[str] = None,
+                 spark_embedding_api_secret: Optional[str] = None,
+                 spark_embedding_domain: Optional[str] = None,
                  ):
         super().__init__(
-            spark_app_id=spark_app_id,
-            spark_api_key=spark_api_key,
-            spark_api_secret=spark_api_secret,
-            spark_domain=spark_domain
+            spark_embedding_app_id=spark_embedding_app_id,
+            spark_embedding_api_key=spark_embedding_api_key,
+            spark_embedding_api_secret=spark_embedding_api_secret,
+            spark_embedding_domain=spark_embedding_domain,
         )
         self._client = None
 
     def _get_client(self) -> Embeddingmodel:
         return Embeddingmodel(
-            spark_app_id=self.spark_app_id,
-            spark_api_key=self.spark_api_key,
-            spark_api_secret=self.spark_api_secret,
-            spark_domain=self.spark_domain
+            spark_embedding_app_id=self.spark_embedding_app_id,
+            spark_embedding_api_key=self.spark_embedding_api_key,
+            spark_embedding_api_secret=self.spark_embedding_api_secret,
+            spark_embedding_domain=self.spark_embedding_domain
         )
 
     def _get_query_embedding(self, query: str) -> List[float]:

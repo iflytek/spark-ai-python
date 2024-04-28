@@ -1,13 +1,22 @@
 from sparkai.embedding.spark_embedding import Embeddingmodel, SparkEmbeddingFunction
 import chromadb
+import os
+
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    raise RuntimeError(
+        'Python environment for SPARK AI is not completely set up: required package "python-dotenv" is missing.') from None
+
+load_dotenv()
 
 
 def test_embedding():
     model = Embeddingmodel(
-        spark_app_id="id",
-        spark_api_key="key",
-        spark_api_secret="secret",
-        spark_domain="query",
+        spark_embedding_app_id=os.environ['SPARK_Embedding_APP_ID'],
+        spark_embedding_api_key=os.environ['SPARK_Embedding_API_KEY'],
+        spark_embedding_api_secret=os.environ['SPARK_Embedding_API_SECRET'],
+        spark_embedding_domain=os.environ['SPARK_Embedding_DOMAIN'],
     )
     # desc = {"messages":[{"content":"cc","role":"user"}]}
     desc = {"content": "cc", "role": "user"}
@@ -20,10 +29,10 @@ def test_embedding():
 def test_chroma_embedding():
     chroma_client = chromadb.Client()
     sparkmodel = SparkEmbeddingFunction(
-        spark_app_id="id",
-        spark_api_key="key",
-        spark_api_secret="secret",
-        spark_domain="query",
+        spark_embedding_app_id=os.environ['SPARK_Embedding_APP_ID'],
+        spark_embedding_api_key=os.environ['SPARK_Embedding_API_KEY'],
+        spark_embedding_api_secret=os.environ['SPARK_Embedding_API_SECRET'],
+        spark_embedding_domain=os.environ['SPARK_Embedding_DOMAIN'],
     )
     a = sparkmodel(["This is a document", "This is another document"])
     # print(type(a))

@@ -9,27 +9,23 @@ from sparkai.embedding.spark_embedding import SparkEmbeddingFunction
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, Settings
 from sparkai.frameworks.llama_index import SparkAI
 
-# set up  sparkai embedding
-os.environ['spark_app_id'] = "id"
-os.environ['spark_app_key'] = "key"
-os.environ['spark_app_secret'] = "secret"
-os.environ['spark_domain'] = "query"
-# set spark llm
-os.environ['SPARKAI_APP_ID'] = 'ID'
-os.environ['SPARKAI_API_KEY'] = 'KEY'
-os.environ['SPARKAI_API_SECRET'] = 'SECRET'
-os.environ['SPARKAI_DOMAIN'] = 'DOMAIN'
-os.environ['SPARKAI_URL'] = 'URL'
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    raise RuntimeError(
+        'Python environment for SPARK AI is not completely set up: required package "python-dotenv" is missing.') from None
+
+load_dotenv()
 
 
 def llama_query():
     chroma_client = chromadb.Client()
     chroma_collection = chroma_client.get_or_create_collection(name="spark")
     # define embedding function
-    embed_model = SparkAiEmbeddingModel(spark_app_id=os.environ['spark_app_id'],
-                                        spark_api_key=os.environ['spark_app_key'],
-                                        spark_api_secret=os.environ['spark_app_secret'],
-                                        spark_domain=os.environ['spark_domain'])
+    embed_model = SparkAiEmbeddingModel(spark_embedding_app_id=os.environ['SPARK_Embedding_APP_ID'],
+                                        spark_embedding_api_key=os.environ['SPARK_Embedding_API_KEY'],
+                                        spark_embedding_api_secret=os.environ['SPARK_Embedding_API_SECRET'],
+                                        spark_embedding_domain=os.environ['SPARKAI_Embedding_DOMAIN'])
     # define LLM Model
     sparkai = SparkAI(
         spark_api_url=os.environ["SPARKAI_URL"],

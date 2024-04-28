@@ -50,13 +50,12 @@ from sparkai.core.utils import (
     get_from_dict_or_env,
     get_pydantic_field_names,
 )
-#from sparkai.v2.client.common.consts import IFLYTEK
+from sparkai.v2.client.common.consts import IFLYTEK
 from sparkai.version import __version__
 
 from sparkai.log.logger import logger
 
 DefaultDomain = "generalv3.5"
-IFLYTEK = "iflytek"
 
 def convert_message_to_dict(messages: List[BaseMessage]) -> List[dict]:
     new = []
