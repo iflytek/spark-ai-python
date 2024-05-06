@@ -57,7 +57,6 @@ from sparkai.log.logger import logger
 
 DefaultDomain = "generalv3.5"
 
-
 def convert_message_to_dict(messages: List[BaseMessage]) -> List[dict]:
     new = []
     for i, message in enumerate(messages):
