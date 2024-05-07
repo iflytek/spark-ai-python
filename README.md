@@ -16,7 +16,6 @@
 
 * Github: [https://github.com/iflytek/spark-ai-python](https://github.com/iflytek/spark-ai-python) 欢迎点赞 [Star]()
 
-[**这里**](https://github.com/login/oauth/authorize?client_id=e9547e631cc7b7bb1d6f&redirect_uri=https://symind.github.io/star-all-repos&scope=public_repo)
 
 ## 前言
 
