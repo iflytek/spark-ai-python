@@ -9,7 +9,7 @@
 <span class="badge-placeholder">[![License: Apache2.0](https://img.shields.io/github/license/iflytek/spark-ai-python)](https://github.com/iflytek/aiges/blob/master/LICENSE)</span>
 
 
-本Python SDK库帮助用户更快体验讯飞星火大模型
+本Python SDK库帮助用户更快体验讯飞星火大模型，更简单，更值得依赖
 
 
 ## 项目地址
