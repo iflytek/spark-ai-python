@@ -34,13 +34,14 @@ import json
 import os
 
 from sparkai.core.utils.function_calling import convert_to_openai_tool
-from sparkai.llm.llm import ChatSparkLLM, ChunkPrintHandler,AsyncChunkPrintHandler
+from sparkai.llm.llm import ChatSparkLLM, ChunkPrintHandler, AsyncChunkPrintHandler
 from sparkai.core.messages import ChatMessage, ImageChatMessage
 
 try:
     from dotenv import load_dotenv
 except ImportError:
-    raise RuntimeError('Python environment for SPARK AI is not completely set up: required package "python-dotenv" is missing.') from None
+    raise RuntimeError(
+        'Python environment for SPARK AI is not completely set up: required package "python-dotenv" is missing.') from None
 
 load_dotenv()
 
@@ -93,8 +94,12 @@ def test_stream_generator():
         )]
     handler = ChunkPrintHandler()
     # a = spark.generate([messages], callbacks=[])
+    # for message in spark.stream(messages):
+    # print(message.content),
     for message in spark.stream(messages):
-        print(message.content),
+        print(message['content'])
+        print(message['token_usage'])
+
 
 def test_stream():
     from sparkai.log.logger import logger
@@ -125,7 +130,7 @@ def test_stream():
 from sparkai.core.pydantic_v1 import BaseModel, Field
 
 
-def multiply(a,b :int) -> int:
+def multiply(a, b: int) -> int:
     """乘法函数，
     Args:
         a: 输入a
@@ -134,7 +139,8 @@ def multiply(a,b :int) -> int:
          返回 a*b 结果
     """
     print("hello success")
-    return a*b
+    return a * b
+
 
 def test_function_call_once():
     from sparkai.core.callbacks import StdOutCallbackHandler
@@ -150,17 +156,18 @@ def test_function_call_once():
 
     )
     function_definition = [convert_to_openai_tool(multiply)]
-    print(json.dumps(convert_to_openai_tool(multiply),ensure_ascii=False))
+    print(json.dumps(convert_to_openai_tool(multiply), ensure_ascii=False))
     messages = [ChatMessage(
         role="user",
         content=messages[0]['content']
 
     )]
     handler = ChunkPrintHandler()
-    a = spark.generate([messages], callbacks=[handler],function_definition=function_definition)
+    a = spark.generate([messages], callbacks=[handler], function_definition=function_definition)
     print(a)
     print(a.generations[0][0].text)
     print(a.llm_output)
+
 
 def test_function_call_stream():
     from sparkai.core.callbacks import StdOutCallbackHandler
@@ -176,14 +183,14 @@ def test_function_call_stream():
 
     )
     function_definition = [convert_to_openai_tool(multiply)]
-    print(json.dumps(convert_to_openai_tool(multiply),ensure_ascii=False))
+    print(json.dumps(convert_to_openai_tool(multiply), ensure_ascii=False))
     messages = [ChatMessage(
         role="user",
         content=messages[0]['content']
 
     )]
     handler = ChunkPrintHandler()
-    a = spark.generate([messages], callbacks=[handler],function_definition=function_definition)
+    a = spark.generate([messages], callbacks=[handler], function_definition=function_definition)
     print(a)
     print(a.generations[0][0].text)
     print([a.generations[0][0].message])
@@ -219,7 +226,7 @@ def test_Ua():
 def test_image():
     from sparkai.core.callbacks import StdOutCallbackHandler
     import base64
-    image_content = base64.b64encode(open("spark_llama_index.png",'rb').read())
+    image_content = base64.b64encode(open("spark_llama_index.png", 'rb').read())
 
     spark = ChatSparkLLM(
         spark_app_id=os.environ["SPARKAI_APP_ID"],
@@ -234,7 +241,7 @@ def test_image():
         role="user",
         content=image_content,
         content_type="image"
-    ),ImageChatMessage(
+    ), ImageChatMessage(
         role="user",
         content="这是什么图",
         content_type="text"
@@ -244,6 +251,7 @@ def test_image():
     print(a)
     print(a.generations[0][0].text)
     print(a.llm_output)
+
 
 def test_function_call_once_sysetm():
     from sparkai.core.callbacks import StdOutCallbackHandler
@@ -259,18 +267,19 @@ def test_function_call_once_sysetm():
 
     )
     function_definition = [convert_to_openai_tool(multiply)]
-    print(json.dumps(convert_to_openai_tool(multiply),ensure_ascii=False))
-    messages = [ChatMessage(role="system",content="你是个计算器"),
+    print(json.dumps(convert_to_openai_tool(multiply), ensure_ascii=False))
+    messages = [ChatMessage(role="system", content="你是个计算器"),
                 ChatMessage(
-                        role="user",
-                        content=messages[0]['content']
+                    role="user",
+                    content=messages[0]['content']
 
-    )]
+                )]
     handler = ChunkPrintHandler()
-    a = spark.generate([messages], callbacks=[handler],function_definition=function_definition)
+    a = spark.generate([messages], callbacks=[handler], function_definition=function_definition)
     print(a)
     print(a.generations[0][0].text)
     print(a.llm_output)
+
 
 def test_function_call_once_max_tokens():
     from sparkai.core.callbacks import StdOutCallbackHandler
@@ -283,28 +292,27 @@ def test_function_call_once_max_tokens():
         spark_api_secret=os.environ["SPARKAI_API_SECRET"],
         spark_llm_domain=os.environ["SPARKAI_DOMAIN"],
         streaming=False,
-        max_tokens= 1024,
+        max_tokens=1024,
 
     )
     function_definition = [convert_to_openai_tool(multiply)]
-    print(json.dumps(convert_to_openai_tool(multiply),ensure_ascii=False))
-    messages = [ChatMessage(role="system",content="你是个计算器"),
+    print(json.dumps(convert_to_openai_tool(multiply), ensure_ascii=False))
+    messages = [ChatMessage(role="system", content="你是个计算器"),
                 ChatMessage(
-                        role="user",
-                        content=messages[0]['content']
+                    role="user",
+                    content=messages[0]['content']
 
-    )]
+                )]
     handler = ChunkPrintHandler()
-    a = spark.generate([messages], callbacks=[handler],function_definition=function_definition)
+    a = spark.generate([messages], callbacks=[handler], function_definition=function_definition)
     print(a)
     print(a.generations[0][0].text)
     print(a.llm_output)
 
 
-
 def test_maas():
     from sparkai.log.logger import logger
-    #logger.setLevel("debug")
+    # logger.setLevel("debug")
     from sparkai.core.callbacks import StdOutCallbackHandler
     messages = [{'role': 'user',
                  'content': "帮我算下 12乘以12"}]
@@ -315,23 +323,25 @@ def test_maas():
         spark_api_secret=os.environ["SPARKAI_API_SECRET"],
         spark_llm_domain="x6d6a8a00",
         streaming=True,
-        max_tokens= 1024,
+        max_tokens=1024,
 
     )
-    print(json.dumps(convert_to_openai_tool(multiply),ensure_ascii=False))
+    print(json.dumps(convert_to_openai_tool(multiply), ensure_ascii=False))
     messages = [
-                ChatMessage(
-                        role="user",
-                        content=messages[0]['content']
+        ChatMessage(
+            role="user",
+            content=messages[0]['content']
 
-    )]
+        )]
     handler = ChunkPrintHandler()
     a = spark.generate([messages], callbacks=[handler])
     print(a.generations[0][0].text)
     print(a.llm_output)
+
+
 def test_starcoder2():
     from sparkai.log.logger import logger
-    #logger.setLevel("debug")
+    # logger.setLevel("debug")
     from sparkai.core.callbacks import StdOutCallbackHandler
     messages = [{'role': 'user',
                  'content': "帮我生成一段代码，爬取baidu.com"}]
@@ -342,24 +352,25 @@ def test_starcoder2():
         spark_api_secret=os.environ["SPARKAI_API_SECRET"],
         spark_llm_domain="xsstarcoder27binst",
         streaming=True,
-        max_tokens= 1024,
+        max_tokens=1024,
 
     )
     messages = [
-                ChatMessage(
-                        role="user",
-                        content=messages[0]['content']
+        ChatMessage(
+            role="user",
+            content=messages[0]['content']
 
-    )]
+        )]
     handler = ChunkPrintHandler()
-    #a = spark.generate([messages], callbacks=[])
+    # a = spark.generate([messages], callbacks=[])
     a = spark.stream(messages)
     for message in a:
         print(message)
 
+
 async def test_astream():
     from sparkai.log.logger import logger
-    #logger.setLevel("debug")
+    # logger.setLevel("debug")
     from sparkai.core.callbacks import StdOutCallbackHandler
     messages = [{'role': 'user',
                  'content': "帮我生成一段代码，爬取baidu.com"}]
@@ -370,23 +381,21 @@ async def test_astream():
         spark_api_secret=os.environ["SPARKAI_API_SECRET"],
         spark_llm_domain="xsstarcoder27binst",
         streaming=True,
-        max_tokens= 1024,
+        max_tokens=1024,
     )
     messages = [
-                ChatMessage(
-                        role="user",
-                        content=messages[0]['content']
+        ChatMessage(
+            role="user",
+            content=messages[0]['content']
 
-    )]
+        )]
     handler = AsyncChunkPrintHandler()
     a = spark.astream(messages, config={"callbacks": [handler]})
     async for message in a:
         print(message)
 
 
-
 if __name__ == '__main__':
-
     test_once()
     test_stream()
     test_function_call_once()
@@ -394,8 +403,9 @@ if __name__ == '__main__':
     test_image()
     test_function_call_once_sysetm()
     test_function_call_once_max_tokens()
-    #test_maas()
+    test_maas()
     test_stream_generator()
     test_starcoder2()
     import asyncio
+
     asyncio.run(test_astream())

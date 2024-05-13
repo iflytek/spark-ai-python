@@ -336,7 +336,7 @@ class ChatSparkLLM(BaseChatModel):
 
             if run_manager:
                 run_manager.on_llm_new_token(str(chunk.content), llm_output=llm_output, data=delta, final=final_frame)
-            yield ChatGenerationChunk(message=chunk)
+            yield [ChatGenerationChunk(message=chunk),llm_output.get("token_usage",'None')]
 
     def _generate(
             self,
