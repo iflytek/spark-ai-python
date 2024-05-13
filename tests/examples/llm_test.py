@@ -419,7 +419,7 @@ def test_error():
     try:
         error_func()
     except ConnectionError as e:
-        print(e.error_code)
+        print(e.error_code, str(e))
 
 if __name__ == '__main__':
     # import asyncio
@@ -427,7 +427,7 @@ if __name__ == '__main__':
     # asyncio.run(test_26b())
     # test_once()
     #test_stream()
-    #test_error()
+    test_error()
     # test_function_call_once()
     # test_function_call_stream()
     # test_image()

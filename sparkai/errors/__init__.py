@@ -61,4 +61,5 @@ class SparkAIClientConfigurationError(SparkAIClientError):
 class SparkAIConnectionError(ConnectionError):
     def __init__(self, error_code, message):
         self.error_code = error_code
+        self.message = message
         super().__init__(message)
