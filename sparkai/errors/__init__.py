@@ -56,3 +56,9 @@ class SparkAIClientConfigurationError(SparkAIClientError):
     * when attempting to send messages over the websocket when the connection is closed.
     * when external system (e.g., Amazon S3) configuration / credentials are not correct
     """
+
+
+class SparkAIConnectionError(ConnectionError):
+    def __init__(self, error_code, message):
+        self.error_code = error_code
+        super().__init__(message)

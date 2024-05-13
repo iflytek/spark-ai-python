@@ -50,6 +50,7 @@ from sparkai.core.utils import (
     get_from_dict_or_env,
     get_pydantic_field_names,
 )
+from sparkai.errors import SparkAIConnectionError
 from sparkai.v2.client.common.consts import IFLYTEK
 from sparkai.version import __version__
 
@@ -285,7 +286,7 @@ class ChatSparkLLM(BaseChatModel):
                 chunk = _convert_delta_to_message_chunk(delta, default_chunk_class)
             else:
                 delta = {}
-                chunk = default_chunk_class(content="")
+                chunk = default_chunk_class(content="", additional_kwargs=llm_output)
 
             if run_manager:
                 await run_manager.on_llm_new_token(str(chunk.content), llm_output=llm_output, data=delta,
@@ -331,8 +332,8 @@ class ChatSparkLLM(BaseChatModel):
                 delta = content["data"]
                 chunk = _convert_delta_to_message_chunk(delta, default_chunk_class)
             else:
-                delta =  {}
-                chunk = default_chunk_class(content="")
+                delta = {}
+                chunk = default_chunk_class(content="", additional_kwargs=llm_output)
 
             if run_manager:
                 run_manager.on_llm_new_token(str(chunk.content), llm_output=llm_output, data=delta, final=final_frame)
@@ -563,7 +564,7 @@ class _SparkLLMClient:
         return req_thread
 
     def on_error(self, ws: Any, error: Optional[Any]) -> None:
-        self.queue.put({"error": error})
+        self.queue.put({"error": error, "error_code": -1})
         ws.close()
 
     def on_close(self, ws: Any, close_status_code: int, close_reason: str) -> None:
@@ -593,7 +594,7 @@ class _SparkLLMClient:
         logger.debug(f"sid: {data['header']['sid']}, code: {code}")
         if code != 0:
             self.queue.put(
-                {"error": f"Error Code: {code}, Error: {data['header']['message']}"}
+                {"error": f"Error Code: {code}, Error: {data['header']['message']}", "error_code": code}
             )
             ws.close()
         else:
@@ -654,7 +655,7 @@ class _SparkLLMClient:
                 else:
                     continue
             if "error" in content:
-                e = ConnectionError(content["error"])
+                e = SparkAIConnectionError(error_code=content["error_code"], message=content["error"])
                 err_cnt += 1
                 raise e
 
@@ -683,7 +684,7 @@ class _SparkLLMClient:
                 else:
                     continue
             if "error" in content:
-                e = ConnectionError(content["error"])
+                e = SparkAIConnectionError(error_code=content["error_code"], message=content["error"])
                 err_cnt += 1
                 raise e
 

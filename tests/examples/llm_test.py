@@ -34,6 +34,7 @@ import json
 import os
 
 from sparkai.core.utils.function_calling import convert_to_openai_tool
+from sparkai.errors import SparkAIConnectionError
 from sparkai.llm.llm import ChatSparkLLM, ChunkPrintHandler,AsyncChunkPrintHandler
 from sparkai.core.messages import ChatMessage, ImageChatMessage
 
@@ -94,7 +95,7 @@ def test_stream_generator():
     handler = ChunkPrintHandler()
     # a = spark.generate([messages], callbacks=[])
     for message in spark.stream(messages):
-        print(message.content),
+        print([message])
 
 def test_stream():
     from sparkai.log.logger import logger
@@ -381,21 +382,59 @@ async def test_astream():
     handler = AsyncChunkPrintHandler()
     a = spark.astream(messages, config={"callbacks": [handler]})
     async for message in a:
+        print([message])
+
+
+async def test_26b():
+    from sparkai.log.logger import logger
+    #logger.setLevel("debug")
+    from sparkai.core.callbacks import StdOutCallbackHandler
+    messages = [{'role': 'user',
+                 'content': "卧槽"}]
+    spark = ChatSparkLLM(
+        spark_api_url="wss://xingchen-api.cn-huabei-1.xf-yun.com/v1.1/chat",
+        spark_app_id=os.environ["SPARKAI_APP_ID"],
+        spark_api_key=os.environ["SPARKAI_API_KEY"],
+        spark_api_secret=os.environ["SPARKAI_API_SECRET"],
+        spark_llm_domain="x7bfa6023",
+        streaming=True,
+        max_tokens= 1024,
+    )
+    messages = [
+                ChatMessage(
+                        role="user",
+                        content=messages[0]['content']
+
+    )]
+    handler = AsyncChunkPrintHandler()
+    a = spark.astream(messages, config={"callbacks": [handler]})
+    async for message in a:
         print(message)
 
 
+def error_func():
+    raise SparkAIConnectionError(error_code=111, message="connection error")
+
+def test_error():
+    try:
+        error_func()
+    except ConnectionError as e:
+        print(e.error_code)
 
 if __name__ == '__main__':
-
-    test_once()
-    test_stream()
-    test_function_call_once()
-    test_function_call_stream()
-    test_image()
-    test_function_call_once_sysetm()
-    test_function_call_once_max_tokens()
-    #test_maas()
+    # import asyncio
+    # test_26b()
+    # asyncio.run(test_26b())
+    # test_once()
+    #test_stream()
+    #test_error()
+    # test_function_call_once()
+    # test_function_call_stream()
+    # test_image()
+    # test_function_call_once_sysetm()
+    # test_function_call_once_max_tokens()
+    # #test_maas()
     test_stream_generator()
-    test_starcoder2()
+    # test_starcoder2()
     import asyncio
     asyncio.run(test_astream())
