@@ -259,6 +259,7 @@ class ChatSparkLLM(BaseChatModel):
         function_definition = []
         if "function_definition" in kwargs:
             function_definition = kwargs['function_definition']
+            default_chunk_class = FunctionCallMessageChunk
 
         llm_output = {}
         if "llm_output" in kwargs:
@@ -305,6 +306,7 @@ class ChatSparkLLM(BaseChatModel):
         function_definition = []
         if "function_definition" in kwargs:
             function_definition = kwargs['function_definition']
+            default_chunk_class = FunctionCallMessageChunk
 
         llm_output = {}
         if "llm_output" in kwargs:
@@ -354,6 +356,7 @@ class ChatSparkLLM(BaseChatModel):
         function_definition = []
         if "function_definition" in kwargs:
             function_definition = kwargs['function_definition']
+        converted_messages = convert_message_to_dict(messages)
 
         if self.streaming:
             stream_iter = self._stream(
@@ -361,7 +364,6 @@ class ChatSparkLLM(BaseChatModel):
             )
             return generate_from_stream(stream_iter, llm_output)
 
-        converted_messages = convert_message_to_dict(messages)
         self.client.arun(
             converted_messages,
             self.spark_user_id,
@@ -611,8 +613,8 @@ class _SparkLLMClient:
                 self.blocking_message["function_call"] = function_call
 
             if status == 2:
-                if not ws.streaming:
-                    self.queue.put({"data": self.blocking_message})
+                #if  ws.streaming:
+                self.queue.put({"data": self.blocking_message})
                 usage_data = (
                     data.get("payload", {}).get("usage", {}).get("text", {})
                     if data

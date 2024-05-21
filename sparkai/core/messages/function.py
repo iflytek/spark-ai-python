@@ -1,5 +1,6 @@
 from typing import Any, List, Literal
 
+from sparkai.core.messages import AIMessageChunk
 from sparkai.core.messages.base import (
     BaseMessage,
     BaseMessageChunk,
@@ -96,10 +97,9 @@ class FunctionCallMessageChunk(FunctionCallMessage, BaseMessageChunk):
             return self.__class__(
                 name=self.name,
                 content=merge_content(self.content, other.content),
-                function_call=other.function_call, # function call no need chunk now
+                function_call=self._merge_kwargs_dict(self.function_call,other.function_call), # function call no need chunk now
                 additional_kwargs=self._merge_kwargs_dict(
                     self.additional_kwargs, other.additional_kwargs
                 ),
             )
-
         return super().__add__(other)
