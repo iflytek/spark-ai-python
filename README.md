@@ -552,7 +552,24 @@ if __name__ == "__main__":
     test_chroma_embedding()
 ```
 
+### 额外参数
 
+#### 额外Parameter参数
+
+可通过构造 `model_kwargs` 字典传入Client配置中即可
+```python
+spark = ChatSparkLLM(
+    spark_api_url="wss://xingchen-api.cn-huabei-1.xf-yun.com/v1.1/chat",
+    spark_app_id=os.environ["SPARKAI_APP_ID"],
+    spark_api_key=os.environ["SPARKAI_API_KEY"],
+    spark_api_secret=os.environ["SPARKAI_API_SECRET"],
+    spark_llm_domain="xspark13b6k",
+    streaming=True,
+    max_tokens=1024,
+    model_kwargs={"search_disable": False},
+)
+
+```
 
 ### 调试模式
 
