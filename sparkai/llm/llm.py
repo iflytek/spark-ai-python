@@ -5,6 +5,7 @@ import hmac
 import json
 import logging
 import queue
+import ssl
 import threading
 from datetime import datetime
 from queue import Queue
@@ -531,14 +532,15 @@ class _SparkLLMClient:
                 on_error=self.on_error,
                 on_close=self.on_close,
                 on_open=self.on_open,
-                header=self.user_agent
+                header=self.user_agent,
+
             )
             ws.function_definition = function_definition
             ws.messages = messages
             ws.user_id = user_id
             ws.model_kwargs = self.model_kwargs if model_kwargs is None else model_kwargs
             ws.streaming = streaming
-            ws.run_forever()
+            ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE})
         else:
             # HTTP logic
             result = self.request(messages)
@@ -626,11 +628,14 @@ class _SparkLLMClient:
     def gen_params(
             self, messages: list, user_id: str, model_kwargs: Optional[dict] = None, function_definition: list = []
     ) -> dict:
+        patch_id = model_kwargs.pop("patch_id", None)
         data: Dict = {
             "header": {"app_id": self.app_id, "uid": user_id},
             "parameter": {"chat": {"domain": self.spark_domain}},
             "payload": {"message": {"text": messages}},
         }
+        if patch_id:
+            data["header"]["patch_id"] = [patch_id]
         if len(function_definition) > 0:
             data["payload"]["functions"] = {}
             data["payload"]["functions"]["text"] = function_definition
