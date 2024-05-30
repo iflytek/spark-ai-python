@@ -331,15 +331,14 @@ class ChatSparkLLM(BaseChatModel):
             content = json.loads(content)
             code = content['header']['code']
             logger.debug(f"sid: {content['header']['sid']}, code: {code}")
-            if code != 0:
+            if code != 0:  # error
                 logger.error(content['header']['message'])
-                print(content['header']['message'])
-                continue
+                # print(content['header']['message'])
             data = content['payload']
             if "usage" in data:
                 final_frame = True
                 llm_output["token_usage"] = data['usage']['text']
-            if 'text' not in data['choices'] and not final_frame:
+            if 'choices' not in data and not final_frame:
                 continue
             if not final_frame:
                 delta = data['choices']['text'][0]
@@ -644,9 +643,11 @@ class _SparkLLMClient:
                 )
             return aws
         except websockets.ConnectionClosed as e:
-            print(f"Connection closed unexpectedly:{e}")
+            logger.error(f"Connection closed unexpectedly:{e}")
+            # print(f"Connection closed unexpectedly:{e}")
         except Exception as e:
-            print(f"An error occurred: {e}")
+            logger.error(f"An error occurred: {e}")
+            # print(f"An error occurred: {e}")
 
     def on_error(self, ws: Any, error: Optional[Any]) -> None:
         self.queue.put({"error": error, "error_code": -1})

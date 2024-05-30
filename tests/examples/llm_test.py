@@ -433,7 +433,7 @@ def test_error():
 
 async def test_asystream():
     messages = [{'role': 'user',
-                 'content': "Where are you from?"}]
+                 'content': "What is your name?"}]
     spark = ChatSparkLLM(
         spark_api_url=os.environ["SPARKAI_URL"],
         spark_app_id=os.environ["SPARKAI_APP_ID"],
@@ -441,6 +441,7 @@ async def test_asystream():
         spark_api_secret=os.environ["SPARKAI_API_SECRET"],
         spark_llm_domain=os.environ["SPARKAI_DOMAIN"],
         streaming=True,
+        # max_tokens=4096,
     )
     messages = [
         ChatMessage(
@@ -452,6 +453,7 @@ async def test_asystream():
     a = spark.astream(messages, config={"callbacks": [handler]})
     async for message in a:
         print(message)
+
 
 if __name__ == '__main__':
     # import asyncio
@@ -469,5 +471,6 @@ if __name__ == '__main__':
     # test_stream_generator()
     # test_starcoder2()
     import asyncio
+
     # asyncio.run(test_astream())
     asyncio.run(test_asystream())
