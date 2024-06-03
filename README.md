@@ -571,6 +571,39 @@ spark = ChatSparkLLM(
 
 ```
 
+#### patch_id
+
+可通过构造 `model_kwargs` 字典传入`patch_id`即可，适用于lora或小包类型类型推理
+
+```python
+async def test_13b_lora():
+    from sparkai.log.logger import logger
+    logger.setLevel("debug")
+    from sparkai.core.callbacks import StdOutCallbackHandler
+    messages = [{'role': 'user',
+                 'content': "卧槽"}]
+    spark = ChatSparkLLM(
+        spark_api_url="wss://xingchen-api.cn-huabei-1.xf-yun.com/v1.1/chat",
+        spark_app_id=os.environ["SPARKAI_APP_ID"],
+        spark_api_key=os.environ["SPARKAI_API_KEY"],
+        spark_api_secret=os.environ["SPARKAI_API_SECRET"],
+        spark_llm_domain="xspark13b6k",
+        streaming=True,
+        max_tokens=1024,
+        model_kwargs={"patch_id": "210267877777408"},
+    )
+    messages = [
+                ChatMessage(
+                        role="user",
+                        content=messages[0]['content']
+
+    )]
+    handler = AsyncChunkPrintHandler()
+    a = spark.astream(messages, config={"callbacks": [handler]})
+    async for message in a:
+        print(message)
+```
+
 ### 调试模式
 
 设置日志级别:
