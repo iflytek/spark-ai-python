@@ -552,9 +552,9 @@ if __name__ == "__main__":
     test_chroma_embedding()
 ```
 
-### 额外参数
+### 其它参数
 
-#### 额外Parameter参数
+#### Parameter参数
 
 可通过构造 `model_kwargs` 字典传入Client配置中即可
 ```python
