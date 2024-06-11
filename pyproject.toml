@@ -25,6 +25,8 @@ jsonpatch = "*"
 pydantic = "*"
 pyyaml = "*"
 httpx = "*"
+llama-index = "^0.10.24"
+llama-index-vector-stores-chroma = "^0.1.6"
 
 llama-index-core = { version = "^0.10.24.post1", optional = true }
 pyautogen = { version = ">=0.2.20", optional = true }
