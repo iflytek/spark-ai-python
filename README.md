@@ -346,6 +346,7 @@ INFO:     Uvicorn running on http://0.0.0.0:8008 (Press CTRL+C to quit)
 ## 生态支持
 
 <h3 id="llama_index">LLamaIndex Support</h3>
+Before using chroma vector store, please install it by running pip install llama-index-vector-stores-chroma.
 
 ```python
 ### 省略其他代码
