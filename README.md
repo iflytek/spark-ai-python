@@ -82,7 +82,7 @@ pip install -i  https://repo.model.xfyun.cn/api/packages/administrator/pypi/simp
 Install from source with:
 
 ```sh
-python setup.py install
+pip install -e .
 ```
 
 ## 如何使用
