@@ -16,7 +16,7 @@ from wsgiref.handlers import format_date_time
 
 import httpx
 import websocket
-
+import websockets
 from sparkai.core.callbacks import (
     CallbackManagerForLLMRun, BaseCallbackHandler, AsyncCallbackManagerForLLMRun, AsyncCallbackHandler,
 )
@@ -58,6 +58,7 @@ from sparkai.version import __version__
 from sparkai.log.logger import logger
 
 DefaultDomain = "generalv3.5"
+
 
 def convert_message_to_dict(messages: List[BaseMessage]) -> List[dict]:
     new = []
@@ -249,7 +250,7 @@ class ChatSparkLLM(BaseChatModel):
         )
         return values
 
-    async def _astream(
+    async def _astream2(
             self,
             messages: List[BaseMessage],
             stop: Optional[List[str]] = None,
@@ -290,6 +291,62 @@ class ChatSparkLLM(BaseChatModel):
                 delta = {}
                 chunk = default_chunk_class(content="", additional_kwargs=llm_output)
 
+            if run_manager:
+                await run_manager.on_llm_new_token(str(chunk.content), llm_output=llm_output, data=delta,
+                                                   final=final_frame)
+
+            yield ChatGenerationChunk(message=chunk)
+
+    async def _astream(
+            self,
+            messages: List[BaseMessage],
+            stop: Optional[List[str]] = None,
+            run_manager: Optional[AsyncCallbackManagerForLLMRun] = None,
+            **kwargs: Any,
+    ) -> AsyncIterator[ChatGenerationChunk]:
+        default_chunk_class = AIMessageChunk
+        function_definition = []
+        if "function_definition" in kwargs:
+            function_definition = kwargs['function_definition']
+            default_chunk_class = FunctionCallMessageChunk
+
+        llm_output = {}
+        if "llm_output" in kwargs:
+            llm_output = kwargs.get("llm_output")
+        else:
+            kwargs["llm_output"] = llm_output
+
+        converted_messages = convert_message_to_dict(messages)
+
+        contents = await self.client.arun2(
+            converted_messages,
+            self.spark_user_id,
+            self.model_kwargs,
+            self.streaming,
+            function_definition
+        )
+
+        final_frame = False
+        async for content in contents:
+            content = json.loads(content)
+            code = content['header']['code']
+            logger.debug(f"sid: {content['header']['sid']}, code: {code}")
+            if code != 0:  # error
+                logger.error(content['header']['message'])
+                # print(content['header']['message'])
+            data = content['payload']
+            if "usage" in data:
+                final_frame = True
+                llm_output["token_usage"] = data['usage']['text']
+            if 'choices' not in data and not final_frame:
+                continue
+            if not final_frame:
+                delta = data['choices']['text'][0]
+                # print(delta)
+                chunk = _convert_delta_to_message_chunk(delta, default_chunk_class)
+            else:
+                delta = {}
+                chunk = default_chunk_class(content="", additional_kwargs=llm_output)
             if run_manager:
                 await run_manager.on_llm_new_token(str(chunk.content), llm_output=llm_output, data=delta,
                                                    final=final_frame)
@@ -567,6 +624,31 @@ class _SparkLLMClient:
         req_thread.start()
         return req_thread
 
+    async def arun2(self,
+                    messages: List[Dict],
+                    user_id: str,
+                    model_kwargs: Optional[dict] = None,
+                    streaming: bool = False,
+                    function_definition: List[Dict] = [],
+                    ):
+        try:
+            async with websockets.connect(_SparkLLMClient._create_url(
+                    self.api_url,
+                    self.api_key,
+                    self.api_secret, )) as aws:
+                await aws.send(json.dumps(self.gen_params(
+                    messages=messages, user_id=user_id, model_kwargs=model_kwargs,
+                    function_definition=function_definition
+                ))
+                )
+            return aws
+        except websockets.ConnectionClosed as e:
+            logger.error(f"Connection closed unexpectedly:{e}")
+            # print(f"Connection closed unexpectedly:{e}")
+        except Exception as e:
+            logger.error(f"An error occurred: {e}")
+            # print(f"An error occurred: {e}")
+
     def on_error(self, ws: Any, error: Optional[Any]) -> None:
         self.queue.put({"error": error, "error_code": -1})
         ws.close()
@@ -615,7 +697,7 @@ class _SparkLLMClient:
                 self.blocking_message["function_call"] = function_call
 
             if status == 2:
-                #if  ws.streaming:
+                # if  ws.streaming:
                 self.queue.put({"data": self.blocking_message})
                 usage_data = (
                     data.get("payload", {}).get("usage", {}).get("text", {})
@@ -736,13 +818,12 @@ class AsyncChunkPrintHandler(AsyncCallbackHandler):
         super().__init__()
         self.color = color
 
-
     async def on_llm_new_token(
-        self,
-        token: str,
-        *,
-        chunk: Optional[Union[GenerationChunk, ChatGenerationChunk]] = None,
-        **kwargs: Any,
+            self,
+            token: str,
+            *,
+            chunk: Optional[Union[GenerationChunk, ChatGenerationChunk]] = None,
+            **kwargs: Any,
     ) -> None:
         """Run when LLM generates a new token.
 
@@ -751,5 +832,3 @@ class AsyncChunkPrintHandler(AsyncCallbackHandler):
         """
         print(token)
         print(kwargs)
-
-
