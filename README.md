@@ -270,7 +270,7 @@ if __name__ == '__main__':
 from sparkai.core.utils.function_calling import convert_to_openai_tool
 
 def multiply(a,b :int) -> int:
-    """乘法函数，
+    """你是一个乘法计算器，可以帮我计算两个数的乘积，例如：计算1乘1等于几或计算1*1等于几
     Args:
         a: 输入a
         b: 输入b
@@ -293,7 +293,7 @@ def test_function_call():
         streaming=False,
 
     )
-    function_definition = [convert_to_openai_tool(multiply)]
+    function_definition =[convert_to_openai_tool(multiply).get("function")]
     print(json.dumps(convert_to_openai_tool(multiply),ensure_ascii=False))
     messages = [ChatMessage(
         role="user",
