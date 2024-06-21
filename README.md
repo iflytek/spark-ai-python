@@ -82,7 +82,7 @@ pip install -i  https://repo.model.xfyun.cn/api/packages/administrator/pypi/simp
 Install from source with:
 
 ```sh
-python setup.py install
+pip install -e .
 ```
 
 ## 如何使用
@@ -131,6 +131,8 @@ if __name__ == '__main__':
     handler = ChunkPrintHandler()
     a = spark.generate([messages], callbacks=[handler])
     print(a)
+    print(a.generations[0][0].text)
+    print(a.llm_output)
 ```
 注意当`streaming`设置为 `False`的时候, callbacks 并不起作用。
 
