@@ -269,8 +269,7 @@ if __name__ == '__main__':
 比如将 mulitply 乘法函数定义传入 ChatSparkLLM
 
 ```python
-from sparkai.core.utils.function_calling import convert_to_openai_tool
-
+from sparkai.core.utils.function_calling import convert_to_openai_tool, convert_to_openai_function
 def multiply(a,b :int) -> int:
     """你是一个乘法计算器，可以帮我计算两个数的乘积，例如：计算1乘1等于几或计算1*1等于几
     Args:
@@ -295,7 +294,7 @@ def test_function_call():
         streaming=False,
 
     )
-    function_definition =[convert_to_openai_tool(multiply).get("function")]
+    function_definition =[convert_to_openai_function(multiply)]
     print(json.dumps(convert_to_openai_tool(multiply),ensure_ascii=False))
     messages = [ChatMessage(
         role="user",
