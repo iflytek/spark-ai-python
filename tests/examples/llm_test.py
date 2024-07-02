@@ -33,7 +33,7 @@
 import json
 import os
 
-from sparkai.core.utils.function_calling import convert_to_openai_tool
+from sparkai.core.utils.function_calling import convert_to_openai_tool, convert_to_openai_function
 from sparkai.errors import SparkAIConnectionError
 from sparkai.llm.llm import ChatSparkLLM, ChunkPrintHandler, AsyncChunkPrintHandler
 from sparkai.core.messages import ChatMessage, ImageChatMessage
@@ -178,10 +178,11 @@ def test_function_call_stream():
         spark_api_secret=os.environ["SPARKAI_API_SECRET"],
         spark_llm_domain=os.environ["SPARKAI_DOMAIN"],
         streaming=True,
+        # 强制抽槽，且强制fc
+        model_kwargs={"function_choice": "multiply"}
 
     )
-    a = convert_to_openai_tool(multiply)
-    function_definition = [a['function']]
+    function_definition = [convert_to_openai_function(multiply)]
     print(json.dumps(function_definition,ensure_ascii=False,indent=4))
     # function_definition = [
     #     {
@@ -441,7 +442,57 @@ async def test_26b():
     async for message in a:
         print(message)
 
+async def test_13bnpu():
+    from sparkai.log.logger import logger
+    # logger.setLevel("debug")
+    from sparkai.core.callbacks import StdOutCallbackHandler
+    messages = [{'role': 'user',
+                 'content': "什么是真爱"}]
+    spark = ChatSparkLLM(
+        spark_api_url="wss://xingchen-api.cn-huabei-1.xf-yun.com/v1.1/chat",
+        spark_app_id=os.environ["SPARKAI_APP_ID"],
+        spark_api_key=os.environ["SPARKAI_API_KEY"],
+        spark_api_secret=os.environ["SPARKAI_API_SECRET"],
+        spark_llm_domain="xspark13b6knpu",
+        streaming=True,
+        max_tokens=1024,
+    )
+    messages = [
+        ChatMessage(
+            role="user",
+            content=messages[0]['content']
 
+        )]
+    handler = AsyncChunkPrintHandler()
+    a = spark.astream(messages, config={"callbacks": [handler]})
+    async for message in a:
+        print(message)
+
+async def test_ultra40():
+    from sparkai.log.logger import logger
+    # logger.setLevel("debug")
+    from sparkai.core.callbacks import StdOutCallbackHandler
+    messages = [{'role': 'user',
+                 'content': "什么是真爱"}]
+    spark = ChatSparkLLM(
+        spark_api_url="wss://spark-api.xf-yun.com/v4.0/chat",
+        spark_app_id=os.environ["SPARKAI_APP_ID"],
+        spark_api_key=os.environ["SPARKAI_API_KEY"],
+        spark_api_secret=os.environ["SPARKAI_API_SECRET"],
+        spark_llm_domain="4.0Ultra",
+        streaming=True,
+        max_tokens=1024,
+    )
+    messages = [
+        ChatMessage(
+            role="user",
+            content=messages[0]['content']
+
+        )]
+    handler = AsyncChunkPrintHandler()
+    a = spark.astream(messages, config={"callbacks": [handler]})
+    async for message in a:
+        print(message)
 def error_func():
     raise SparkAIConnectionError(error_code=111, message="connection error")
 
@@ -464,12 +515,12 @@ if __name__ == '__main__':
 
     logger.setLevel("debug")
     # test_function_call_once()
-    test_function_call_stream()
+    #test_function_call_stream()
     # test_image()
     # test_function_call_once_sysetm()
     # test_function_call_once_max_tokens()
     # #test_maas()
 # test_stream_generator()
 # test_starcoder2()
-# import asyncio
-# asyncio.run(test_astream())
+    import asyncio
+    asyncio.run(test_ultra40())

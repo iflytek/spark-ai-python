@@ -447,22 +447,24 @@ class _SparkLLMClient:
         :return:
         """
         host_map = {
+            "4.0Ultra": "wss://spark-api.xf-yun.com/v4.0/chat",
             "generalv3.5": "wss://spark-api.xf-yun.com/v3.5/chat",
             "generalv3": "wss://spark-api.xf-yun.com/v3.1/chat",
             "generalv2": "wss://spark-api.xf-yun.com/v2.1/chat",
             "general": "wss://spark-api.xf-yun.com/v1.1/chat",
             "image": "wss://spark-api.cn-huabei-1.xf-yun.com/v2.1/image",
+
         }
         if domain == "":
             domain = DefaultDomain
 
         if domain not in host_map:
             domain = DefaultDomain
-            logger.warning("not find the  domain, using default domain: %s", domain)
+            logger.warning("not find the  domain, using url: %s" % url)
             return url
 
         if url != "" and url != host_map[domain]:
-            logger.warning("specified host not match the domain default host, using default domain: %s", domain)
+            logger.warning("specified host not match the domain default host, using default domain: %s" % domain)
 
         return host_map[domain]
 
