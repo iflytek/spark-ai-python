@@ -405,6 +405,7 @@ if __name__ == "__main__":
 
 
 ```
+需配置embedding model和LLM model两部分，SPARKAI_Embedding_DOMAIN为query或para。具体详见https://www.xfyun.cn/doc/spark/Embedding_api.html#_3-%E8%AF%B7%E6%B1%82
 
 示例结果如下:
 
