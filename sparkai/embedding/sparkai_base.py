@@ -5,26 +5,51 @@ from llama_index.core.bridge.pydantic import Field, PrivateAttr
 import time
 
 
-class TokenBucket:
+class TokenBucket():
+
     def __init__(self, rate, capacity):
-        self.rate = rate  # 令牌生成速率（每秒生成的令牌数）
-        self.capacity = capacity  # 令牌桶的容量
-        self.tokens = capacity  # 当前令牌数
-        self.timestamp = time.time()  # 上次更新令牌数的时间戳
+        self.rate = rate  # 发放令牌的速度
+        self.capacity = capacity  # 桶的大小
+        self.tokens = 0  # 当前令牌数量
+        self.timestamp = time.time()  # 上次更新的时间戳
 
     def get_token(self):
         current_time = time.time()
         elapsed = current_time - self.timestamp
-        self.timestamp = current_time
-        self.tokens += elapsed * self.rate
-        if self.tokens > self.capacity:
-            self.tokens = self.capacity
-
-        if self.tokens >= 1:
-            self.tokens -= 1
-            return True
-        else:
+        increment = elapsed * self.rate  # 计算从上次发送到这次发送，新发放的令牌数量
+        self.tokens = min(
+            increment + self.tokens, self.capacity)  # 令牌数量不能超过桶的容量
+        print(self.tokens)
+        self.timestamp = time.time()
+        if self.tokens < 1:
             return False
+        self.tokens -= 1
+        return True
+
+
+import time
+
+
+class TokenBucket2(object):
+
+    # rate是令牌发放速度，capacity是桶的大小
+    def __init__(self, rate, capacity):
+        self._rate = rate
+        self._capacity = capacity
+        self._current_amount = 0
+        self._last_consume_time = int(time.time())
+
+    # token_amount是发送数据需要的令牌数
+    def get_token(self):
+        increment = (int(time.time()) - self._last_consume_time) * self._rate  # 计算从上次发送到这次发送，新发放的令牌数量
+        print(increment)
+        self._current_amount = min(
+            increment + self._current_amount, self._capacity)  # 令牌数量不能超过桶的容量
+        if 1 > self._current_amount:  # 如果没有足够的令牌，则不能发送数据
+            return False
+        self._last_consume_time = int(time.time())
+        self._current_amount -= 1
+        return True
 
 
 def get_embedding(client: Embeddingmodel, text: str) -> List[float]:
@@ -32,15 +57,19 @@ def get_embedding(client: Embeddingmodel, text: str) -> List[float]:
     return client.embedding(text)
 
 
-def get_embeddings(client: Embeddingmodel, texts: List[str], QPS: int) -> List[List[float]]:
+def get_embeddings(client: Embeddingmodel, texts: List[str], qps: int) -> List[List[float]]:
     List_vector = []
-    token_bucket = TokenBucket(rate=QPS, capacity=QPS)  # 初始化令牌桶
+    token_bucket = TokenBucket(rate=qps, capacity=qps)  # 初始化令牌桶
+    count = 0
     for text in texts:
         while not token_bucket.get_token():
-            time.sleep(0.1)  # 如果没有可用令牌，等待一段时间
+            time.sleep(0.1)
         text = {"content": text, "role": "user"}
         embedding = client.embedding(text)
+        count = count + 1
+        # print(count)
         List_vector.append(embedding)
+
     return List_vector
 
 
@@ -49,7 +78,7 @@ class SparkAiEmbeddingModel(BaseEmbedding):
     spark_embedding_api_secret: str = Field(description="SparkAI API secret.")
     spark_embedding_app_id: str = Field(description="SparkAI app id.")
     spark_embedding_domain: str = Field(description="SparkAI domain")
-    QPS: Optional[int] = Field(description="QPS")
+    qps: Optional[int] = Field(description="QPS")
     _client: Optional[Embeddingmodel] = PrivateAttr()
 
     def __init__(self,
@@ -57,14 +86,14 @@ class SparkAiEmbeddingModel(BaseEmbedding):
                  spark_embedding_api_key: Optional[str] = None,
                  spark_embedding_api_secret: Optional[str] = None,
                  spark_embedding_domain: Optional[str] = None,
-                 QPS: Optional[int] = None,
+                 qps: Optional[int] = None,
                  ):
         super().__init__(
             spark_embedding_app_id=spark_embedding_app_id,
             spark_embedding_api_key=spark_embedding_api_key,
             spark_embedding_api_secret=spark_embedding_api_secret,
             spark_embedding_domain=spark_embedding_domain,
-            QPS=QPS
+            qps=qps
         )
         self._client = None
 
@@ -97,7 +126,7 @@ class SparkAiEmbeddingModel(BaseEmbedding):
         return get_embeddings(
             client,
             texts,
-            self.QPS
+            self.qps
         )
 
     def _aget_query_embedding(self, query: str) -> List[float]:
