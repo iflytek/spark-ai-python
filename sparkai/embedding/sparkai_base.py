@@ -19,36 +19,11 @@ class TokenBucket():
         increment = elapsed * self.rate  # 计算从上次发送到这次发送，新发放的令牌数量
         self.tokens = min(
             increment + self.tokens, self.capacity)  # 令牌数量不能超过桶的容量
-        print(self.tokens)
+        # print(self.tokens)
         self.timestamp = time.time()
         if self.tokens < 1:
             return False
         self.tokens -= 1
-        return True
-
-
-import time
-
-
-class TokenBucket2(object):
-
-    # rate是令牌发放速度，capacity是桶的大小
-    def __init__(self, rate, capacity):
-        self._rate = rate
-        self._capacity = capacity
-        self._current_amount = 0
-        self._last_consume_time = int(time.time())
-
-    # token_amount是发送数据需要的令牌数
-    def get_token(self):
-        increment = (int(time.time()) - self._last_consume_time) * self._rate  # 计算从上次发送到这次发送，新发放的令牌数量
-        print(increment)
-        self._current_amount = min(
-            increment + self._current_amount, self._capacity)  # 令牌数量不能超过桶的容量
-        if 1 > self._current_amount:  # 如果没有足够的令牌，则不能发送数据
-            return False
-        self._last_consume_time = int(time.time())
-        self._current_amount -= 1
         return True
 
 
@@ -60,14 +35,11 @@ def get_embedding(client: Embeddingmodel, text: str) -> List[float]:
 def get_embeddings(client: Embeddingmodel, texts: List[str], qps: int) -> List[List[float]]:
     List_vector = []
     token_bucket = TokenBucket(rate=qps, capacity=qps)  # 初始化令牌桶
-    count = 0
     for text in texts:
         while not token_bucket.get_token():
             time.sleep(0.1)
         text = {"content": text, "role": "user"}
         embedding = client.embedding(text)
-        count = count + 1
-        # print(count)
         List_vector.append(embedding)
 
     return List_vector
