@@ -35,6 +35,7 @@ def llama_query():
         spark_api_secret=os.environ["SPARKAI_API_SECRET"],
         spark_llm_domain=os.environ["SPARKAI_DOMAIN"],
         streaming=False,
+        temperature=0.01,
     )
     # load documents
     # Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/docs/examples/data/paul_graham/paul_graham_essay.txt' -OutFile 'data\paul_graham\paul_graham_essay.txt'

@@ -8,21 +8,22 @@ import time
 class TokenBucket():
 
     def __init__(self, rate, capacity):
-        self.rate = rate  # 发放令牌的速度
-        self.capacity = capacity  # 桶的大小
+        self.rate = rate  # 发放令牌的速度，每秒发送令牌的数量为2
+        self.capacity = capacity  # 桶的大小，2
         self.tokens = 0  # 当前令牌数量
-        self.timestamp = time.time()  # 上次更新的时间戳
+        self.timestamp = time.time()  # 上次更新令牌的时间戳
 
     def get_token(self):
         current_time = time.time()
         elapsed = current_time - self.timestamp
-        increment = elapsed * self.rate  # 计算从上次发送到这次发送，新发放的令牌数量
+        increment = elapsed * self.rate  # 计算从上次更新到这次更新的时间，新发放的令牌数量
         self.tokens = min(
             increment + self.tokens, self.capacity)  # 令牌数量不能超过桶的容量
         # print(self.tokens)
-        self.timestamp = time.time()
+
         if self.tokens < 1:
             return False
+        self.timestamp = time.time()
         self.tokens -= 1
         return True
 
@@ -34,9 +35,30 @@ def get_embedding(client: Embeddingmodel, text: str) -> List[float]:
 
 def get_embeddings(client: Embeddingmodel, texts: List[str], qps: int) -> List[List[float]]:
     List_vector = []
+    timestamp = None
+    interval = 1 / qps
+    for text in texts:
+        if timestamp is None or time.time() - timestamp >= interval:
+            text = {"content": text, "role": "user"}
+            embedding = client.embedding(text)
+            List_vector.append(embedding)
+            timestamp = time.time()
+        else:
+            sleeptime = max(interval - (time.time() - timestamp), 0)
+            time.sleep(sleeptime)
+            text = {"content": text, "role": "user"}
+            embedding = client.embedding(text)
+            List_vector.append(embedding)
+            timestamp = time.time()
+
+    return List_vector
+
+
+def get_embeddings2(client: Embeddingmodel, texts: List[str], qps: int) -> List[List[float]]:
+    List_vector = []
     token_bucket = TokenBucket(rate=qps, capacity=qps)  # 初始化令牌桶
     for text in texts:
-        while not token_bucket.get_token():
+        while not token_bucket.get_token():  # 足够可供消耗的令牌，才会继续执行对client的请求
             time.sleep(0.1)
         text = {"content": text, "role": "user"}
         embedding = client.embedding(text)
