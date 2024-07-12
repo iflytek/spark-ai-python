@@ -464,7 +464,8 @@ class _SparkLLMClient:
             return url
 
         if url != "" and url != host_map[domain]:
-            logger.warning("specified host not match the domain default host, using default domain: %s" % domain)
+            logger.warning("specified host not match the domain default host, using %s maybe have problem." % url)
+            return url
 
         return host_map[domain]
 
