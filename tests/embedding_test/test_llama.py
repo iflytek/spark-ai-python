@@ -26,7 +26,7 @@ def llama_query():
                                         spark_embedding_api_key=os.environ['SPARK_Embedding_API_KEY'],
                                         spark_embedding_api_secret=os.environ['SPARK_Embedding_API_SECRET'],
                                         spark_embedding_domain=os.environ['SPARKAI_Embedding_DOMAIN'],
-                                        QPS=2)
+                                        qps=2)
     # define LLM Model
     sparkai = SparkAI(
         spark_api_url=os.environ["SPARKAI_URL"],
@@ -35,6 +35,7 @@ def llama_query():
         spark_api_secret=os.environ["SPARKAI_API_SECRET"],
         spark_llm_domain=os.environ["SPARKAI_DOMAIN"],
         streaming=False,
+        temperature=0.01,
     )
     # load documents
     # Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/run-llama/llama_index/main/docs/docs/examples/data/paul_graham/paul_graham_essay.txt' -OutFile 'data\paul_graham\paul_graham_essay.txt'
@@ -43,6 +44,7 @@ def llama_query():
     vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
     index = VectorStoreIndex.from_documents(documents, storage_context=storage_context, embed_model=embed_model)
+
     # query
     query_engine = index.as_query_engine(llm=sparkai, similarity_top_k=2)
     response = query_engine.query("What did the author do growing up?")
@@ -50,4 +52,5 @@ def llama_query():
 
 
 if __name__ == "__main__":
-    llama_query()
+    for i in range(10):
+        llama_query()
