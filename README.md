@@ -54,7 +54,37 @@
 - [ ] 对接 [liteLLM](https://github.com/BerriAI/litellm)
 - [x] 新增 stream接口支持
 
+### 星火接口现已支持 HTTP/OpenAI style方式访问
 
+参考[文档](https://www.xfyun.cn/doc/spark/HTTP%E8%B0%83%E7%94%A8%E6%96%87%E6%A1%A3.html#_1-%E6%8E%A5%E5%8F%A3%E8%AF%B4%E6%98%8E):  
+```python
+def test_spark_openai_style_stream():
+    # 使用客户端创建一个 completion
+    completion = client.chat.completions.create(
+        model="星火的domain",
+        messages=[
+            {"role": "system", "content": "帮我根据用户意图生成如下Json格式响应: {\"intent\": \"用户意图\"} \n可选的意图有: 天气查询，航班查询，知识库查询、订餐查询、火车票查询",},
+            {"role": "user", "content": "今天天气如何?"},
+        ],
+        user="",
+        stream=True,
+        seed=2, 
+        top_p=0.1,
+        #tools=[ {"type":"function", "function": function} for function in tools],
+       # tool_choice={"type":"function", "function": tools[1]},
+        extra_body={
+            # 星火支持的高级参数传入
+            "patch_id": ["0"]
+
+        },
+        extra_headers={
+        })
+    print(completion)
+    for response in completion:
+       print(response)
+
+
+```
 
 ## 安装
 
