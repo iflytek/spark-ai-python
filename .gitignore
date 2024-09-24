@@ -6,3 +6,4 @@ poetry.lock
 .env_*
 
 
+/meetkai/

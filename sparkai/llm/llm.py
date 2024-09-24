@@ -7,12 +7,14 @@ import logging
 import queue
 import ssl
 import threading
+import time
 from datetime import datetime
 from queue import Queue
 from time import mktime
 from typing import Any, Dict, Generator, Iterator, List, Mapping, Optional, Type, AsyncIterator, AsyncGenerator, Union
 from urllib.parse import urlencode, urlparse, urlunparse
 from wsgiref.handlers import format_date_time
+from datetime import datetime
 
 import httpx
 import websocket
@@ -654,6 +656,7 @@ class _SparkLLMClient:
         while True:
             try:
                 content = self.queue.get(timeout=timeout)
+
             except queue.Empty as _:
                 e = TimeoutError(
                     f"SparkLLMClient wait LLM api response timeout {timeout} seconds"
@@ -677,6 +680,7 @@ class _SparkLLMClient:
             if "data" not in content:
                 break
             yield content
+            self.queue.task_done()
 
     def subscribe(self, timeout: Optional[int] = 30) -> Generator[Dict, None, None]:
         err_cnt = 0
@@ -707,6 +711,7 @@ class _SparkLLMClient:
             if "data" not in content:
                 break
             yield content
+            self.queue.task_done()
 
     # def request(self, messages):
     #     resp = self.client.get('')
