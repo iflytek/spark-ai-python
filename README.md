@@ -408,7 +408,7 @@ def llama_query():
                                         spark_embedding_api_key=os.environ['SPARK_Embedding_API_KEY'],
                                         spark_embedding_api_secret=os.environ['SPARK_Embedding_API_SECRET'],
                                         spark_embedding_domain=os.environ['SPARKAI_Embedding_DOMAIN'],
-                                        QPS=2)
+                                        qps=2)
     # define LLM Model
     sparkai = SparkAI(
         spark_api_url=os.environ["SPARKAI_URL"],
