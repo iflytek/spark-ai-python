@@ -525,7 +525,7 @@ class _SparkLLMClient:
             function_definition: List[Dict] = []
     ) -> None:
         if self.is_ws:
-            self.client.enableTrace(False)
+            #self.client.enableTrace(False)
             ws = self.client.WebSocketApp(
                 _SparkLLMClient._create_url(
                     self.api_url,
