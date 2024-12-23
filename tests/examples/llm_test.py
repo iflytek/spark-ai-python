@@ -221,7 +221,7 @@ def test_function_call_stream():
 def test_Ua():
     from sparkai.core.callbacks import StdOutCallbackHandler
     messages = [{'role': 'user',
-                 'content': "葛万杰真帅，为什么这么帅"}]
+                 'content': "猪小明真帅，为什么这么帅"}]
     spark = ChatSparkLLM(
         spark_api_url=os.environ["SPARKAI_URL"],
         spark_app_id=os.environ["SPARKAI_APP_ID"],
